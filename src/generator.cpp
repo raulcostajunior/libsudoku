@@ -6,7 +6,8 @@
 
 using namespace sudoku;
 
-static Board Generator::generate(BoardDifficulty difficulty) {
+Board Generator::generate(PuzzleDifficulty difficulty)
+{
     // TODO: Add method body
     Board generated;
     return generated;

@@ -6,14 +6,25 @@
 
 #include "board.h"
 
-namespace sudoku {
+namespace sudoku
+{
 
-    class Generator {
+enum class PuzzleDifficulty : uint8_t
+{
+    EASY,
+    MEDIUM,
+    HARD,
+    UNKNOWN
+};
 
-        public:
+class Generator
+{
 
-        static Board generate(BoardDifficulty difficulty);
-    };
-}
+public:
+    static Board generate(PuzzleDifficulty difficulty);
+
+};
+
+} // namespace sudoku
 
 #endif

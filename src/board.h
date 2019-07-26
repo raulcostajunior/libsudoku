@@ -4,31 +4,26 @@
 #include <cstdint>
 #include <utility>
 
-namespace sudoku {
+namespace sudoku
+{
 
-    enum class BoardValueError: std::uint8_t {
-        NO_ERROR,
-        INVALID_VALUE,
-        VALUE_ALREADY_IN_ROW,
-        VALUE_ALREADY_IN_COLUMN,
-        VALUE_ALREADY_IN_SECTION // In the same 3x3 board section. 
-    };
+enum class BoardValueError : std::uint8_t
+{
+    NO_ERROR,
+    INVALID_VALUE,
+    VALUE_ALREADY_IN_ROW,
+    VALUE_ALREADY_IN_COLUMN,
+    VALUE_ALREADY_IN_SECTION // In the same 3x3 board section.
+};
 
-    enum class BoardDifficulty: uint8_t {
-        EASY,
-        MEDIUM,
-        HARD,
-        UNKNOWN
-    };
+/**
+ * @brief A 9x9 Sudoku board.
+*/
+class Board
+{
 
+public:
     /**
-     * @brief A 9x9 Sudoku board.
-     */
-    class Board {
-
-        public:
-
-        /**
          * Retrieves the value at a given (line, column) coordinate of the 
          * board. 
          * 
@@ -38,9 +33,9 @@ namespace sudoku {
          * position is filled, the value will be a number from 1 to 9. If the
          * position is empty, the value will be 0.
          */
-        std::uint8_t valueAt(std::uint8_t line, std::uint8_t column) const noexcept;
+    std::uint8_t valueAt(std::uint8_t line, std::uint8_t column) const noexcept;
 
-        /**
+    /**
          * Sets the value at a given (line, column) coordinate of the board. 
          * 
          * @param line the line number (from 0 to 8).
@@ -52,36 +47,28 @@ namespace sudoku {
          * with 'false' in its first position and the error reason code in its second
          * position.
          */
-        std::pair<bool, BoardValueError> setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
+    std::pair<bool, BoardValueError> setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
 
-        /**
+    /**
          * Clears the board by assigning the value 0 to all its positions.
          */
-        void clear(); 
+    void clear();
 
-        bool isValid() const noexcept;
+    bool isValid() const noexcept;
 
-        BoardDifficulty difficulty() const { return _difficulty; }
-        void setDifficulty(BoardDifficulty d) { _difficulty = d; }
+private:
+    std::uint8_t _values[9][9]{
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0}};
+};
 
-        private:
-
-        std::uint8_t _values[9][9] {
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0, 0}
-        };
-
-        BoardDifficulty _difficulty = BoardDifficulty::UNKNOWN;
-
-    };
-
-}
+} // namespace sudoku
 
 #endif
