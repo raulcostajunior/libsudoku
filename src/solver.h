@@ -4,29 +4,32 @@
 #include <cstdint>
 #include <utility>
 
-namespace sudoku {
+// TODO: Properly document public methods
 
-    class Board;
+namespace sudoku
+{
 
-    enum class SolverError: uint8_t {
-        NO_ERROR,
-        INVALID_BOARD,
-        BOARD_HAS_NO_SOLUTION
-    };
+class Board;
 
-    enum class SolverAlgorithm: uint8_t {
-        BRUTE_FORCE,
-        // James Creek's algorithm is described at
-        // http:://www.ams.org/notices/200904/rtx090400460p.pdf 
-        CREEK_PENCIL_AND_PAPER 
-    };
+enum class SolverError : uint8_t
+{
+    NO_ERROR,
+    INVALID_BOARD,
+    BOARD_HAS_NO_SOLUTION
+};
 
-    class Solver {
+class Solver
+{
 
-        public:
+public:
+    static std::pair<bool, SolverError> solveBruteForce(const Board &board, Board &solvedBoard);
+    
+    // James Creek's algorithm is described at
+    // http:://www.ams.org/notices/200904/rtx090400460p.pdf
+    static std::pair<bool, SolverError> solveCreekMethod(const Board &board, Board &solvedBoard);
 
-        static std::pair<bool, SolverError> solve(const Board& board, SolverAlgorithm algorithm, Board& solvedBoard);
-    };
-}
+};
+
+} // namespace sudoku
 
 #endif

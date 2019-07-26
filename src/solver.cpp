@@ -7,7 +7,14 @@
 using namespace sudoku;
 using namespace std;
 
-static pair<bool, SolverError> Solver::solve(const Board& board, SolverAlgorithm algorithm, Board& solvedBoard) {
+pair<bool, SolverError> Solver::solveBruteForce(const Board &board, Board &solvedBoard)
+{
     // TODO: add method body
-    return make_pair(true, NO_ERROR);
+    return make_pair(true, SolverError::NO_ERROR);
+}
+
+pair<bool, SolverError> Solver::solveCreekMethod(const Board &board, Board &solvedBoard)
+{
+    // TODO: add method body
+    return make_pair(true, SolverError::NO_ERROR);
 }
