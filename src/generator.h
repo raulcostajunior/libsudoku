@@ -13,8 +13,7 @@ enum class PuzzleDifficulty : uint8_t
 {
     EASY,
     MEDIUM,
-    HARD,
-    UNKNOWN
+    HARD
 };
 
 class Generator
