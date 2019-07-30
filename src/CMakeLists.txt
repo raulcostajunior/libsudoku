@@ -29,6 +29,6 @@ add_library (libsudoku_static
 
 set_target_properties(libsudoku_static
     PROPERTIES
-      OUTPUT_NAME "libsudoku"
+      OUTPUT_NAME "sudoku"
 )
 
