@@ -54,7 +54,12 @@ public:
          */
     void clear();
 
+    /**
+     *  Returns true if none of the values in the board violates the Sudoku non-repetition 
+     *  rules  across a line, a column or a 3x3 section.
+     */
     bool isValid() const noexcept;
+
 
 private:
     std::uint8_t _values[9][9]{
