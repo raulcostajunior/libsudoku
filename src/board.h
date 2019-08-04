@@ -47,19 +47,29 @@ public:
          * with 'false' in its first position and the error reason code in its second
          * position.
          */
-    std::pair<bool, BoardValueError> setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
+    std::pair<bool, BoardValueError> setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value) noexcept;
 
     /**
          * Clears the board by assigning the value 0 to all its positions.
          */
-    void clear();
+    void clear() noexcept;
 
     /**
-     *  Returns true if none of the values in the board violates the Sudoku non-repetition 
-     *  rules  across a line, a column or a 3x3 section.
-     */
+        *  Returns true if none of the values in the board violates the Sudoku non-repetition 
+        *  rules  across a line, a column or a 3x3 section.
+        */
     bool isValid() const noexcept;
 
+    /**
+        * Returns true if all the positions in the board are blank (equal to 0).
+        */
+    bool isEmpty() const noexcept;
+
+    /**
+        * Returns true if a board has no blank position and is valid -
+        * in other words, the board corresponds to a solved puzzle.
+        ß*/
+    bool isComplete() const noexcept;
 
 private:
     std::uint8_t _values[9][9]{
