@@ -53,3 +53,13 @@ TEST_CASE("IncompleteBoardCanBeValid")
 {
     
 }
+
+TEST_CASE("BoardCopyCopiesAllValues") 
+{
+
+}
+
+TEST_CASE("BoardsWithTheSameValuesAreEqual") 
+{
+    
+}

@@ -23,6 +23,12 @@ class Board
 {
 
 public:
+
+    // TODO: add a ctor that takes a vector<uint8_t> as a parameter and then initializes the board to it.
+    //       (will be used mostly for the test cases), but can be useful in other scenarios.
+
+    // TODO: define assignment operator, copy ctor and overload == operator (test cases involving assignment and comparison of boards).
+
     /**
          * Retrieves the value at a given (line, column) coordinate of the 
          * board. 
