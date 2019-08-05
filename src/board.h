@@ -68,7 +68,7 @@ public:
     /**
         * Returns true if a board has no blank position and is valid -
         * in other words, the board corresponds to a solved puzzle.
-        ß*/
+        */
     bool isComplete() const noexcept;
 
 private:
