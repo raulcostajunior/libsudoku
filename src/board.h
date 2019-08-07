@@ -32,8 +32,6 @@ public:
 
     Board(const Board &board);
 
-    // TODO: define assignment operator, copy ctor and overload == operator (test cases involving assignment and comparison of boards).
-
     /**
          * Retrieves the value at a given (line, column) coordinate of the 
          * board. 
@@ -84,7 +82,9 @@ public:
 
     bool operator==(const Board &board) const noexcept;
 
-    Board& operator=(const Board &board) noexcept;
+    Board &operator=(const Board &board) noexcept;
+
+    friend std::ostream &operator<<(std::ostream &os, const Board &board);
 
 private:
     std::uint8_t _values[9][9]{
@@ -98,8 +98,6 @@ private:
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0}};
 };
-
-std::ostream& operator<<(std::ostream &os, const Board &board);
 
 } // namespace sudoku
 

@@ -11,7 +11,7 @@ using namespace std;
 
 Board::Board(const vector<uint8_t> &values)
 {
-    uint8_t upperBound = min(81, static_cast<int>(values.size()));
+    uint8_t upperBound = min(static_cast<uint8_t>(81), static_cast<uint8_t>(values.size()));
     for (uint8_t i = 0; i < upperBound; i++)
     {
         uint8_t lin = i / 9;
@@ -206,13 +206,17 @@ Board& Board::operator=(const Board &board) noexcept
     return *this;
 }
 
+namespace sudoku {
 
-ostream& operator<<(ostream &os, const Board &board) {
+ostream &operator<<(ostream &os, const Board &board)
+{
     for (uint8_t lin = 0; lin < 9; lin++) {
         for (uint8_t col = 0; col < 9; col++) {
-            os << board.valueAt(lin, col) << " ";
+            os << board._values[lin][col] << " ";
         }
         os << endl;
     }
     return os;
 }
+
+} // namespace sudoku
