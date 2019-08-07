@@ -2,7 +2,9 @@
 #define BOARD_H
 
 #include <cstdint>
+#include <iostream>
 #include <utility>
+#include <vector>
 
 namespace sudoku
 {
@@ -24,8 +26,11 @@ class Board
 
 public:
 
-    // TODO: add a ctor that takes a vector<uint8_t> as a parameter and then initializes the board to it.
-    //       (will be used mostly for the test cases), but can be useful in other scenarios.
+    Board() = default;
+
+    explicit Board(const std::vector<std::uint8_t> &values);
+
+    Board(const Board &board);
 
     // TODO: define assignment operator, copy ctor and overload == operator (test cases involving assignment and comparison of boards).
 
@@ -77,6 +82,10 @@ public:
         */
     bool isComplete() const noexcept;
 
+    bool operator==(const Board &board) const noexcept;
+
+    Board& operator=(const Board &board) noexcept;
+
 private:
     std::uint8_t _values[9][9]{
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -89,6 +98,8 @@ private:
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0}};
 };
+
+std::ostream& operator<<(std::ostream &os, const Board &board);
 
 } // namespace sudoku
 

@@ -1,11 +1,35 @@
+#include <algorithm>
+#include <iostream>
 #include <cstdint>
 #include <utility>
+#include <vector>
 
 #include "board.h"
 
 using namespace sudoku;
 using namespace std;
 
+Board::Board(const vector<uint8_t> &values)
+{
+    uint8_t upperBound = min(81, static_cast<int>(values.size()));
+    for (uint8_t i = 0; i < upperBound; i++)
+    {
+        uint8_t lin = i / 9;
+        uint8_t col = i % 9;
+        _values[lin][col] = values[i];
+    }
+}
+
+Board::Board(const Board &board)
+{
+    for (uint8_t lin = 0; lin < 9; lin++)
+    {
+        for (uint8_t col = 0; col < 9; col++)
+        {
+            _values[lin][col] = board._values[lin][col];
+        }
+    }
+}
 
 uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept
 {
@@ -17,13 +41,11 @@ uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept
     return 0;
 }
 
-
 pair<bool, BoardValueError> Board::setValueAt(uint8_t line, uint8_t column, uint8_t value) noexcept
 {
     // TODO: add real body
     return make_pair(true, BoardValueError::NO_ERROR);
 }
-
 
 void Board::clear() noexcept
 {
@@ -35,7 +57,6 @@ void Board::clear() noexcept
         }
     }
 }
-
 
 bool Board::isValid() const noexcept
 {
@@ -117,7 +138,6 @@ bool Board::isValid() const noexcept
     return true;
 }
 
-
 bool Board::isEmpty() const noexcept
 {
     bool empty = true;
@@ -131,7 +151,6 @@ bool Board::isEmpty() const noexcept
     }
     return empty;
 }
-
 
 bool Board::isComplete() const noexcept
 {
@@ -156,4 +175,44 @@ bool Board::isComplete() const noexcept
         // completed if and only if it is valid.
         return isValid();
     }
+}
+
+
+bool Board::operator==(const Board &board) const noexcept
+{
+    for (uint8_t lin = 0; lin < 9; lin++)
+    {
+        for (uint8_t col = 0; col < 9; col++)
+        {
+            if (_values[lin][col] != board._values[lin][col])
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+Board& Board::operator=(const Board &board) noexcept
+{
+    for (uint8_t lin = 0; lin < 9; lin++)
+    {
+        for (uint8_t col = 0; col < 9; col++)
+        {
+            _values[lin][col] = board._values[lin][col];
+        }
+    }
+    return *this;
+}
+
+
+ostream& operator<<(ostream &os, const Board &board) {
+    for (uint8_t lin = 0; lin < 9; lin++) {
+        for (uint8_t col = 0; col < 9; col++) {
+            os << board.valueAt(lin, col) << " ";
+        }
+        os << endl;
+    }
+    return os;
 }
