@@ -6,16 +6,17 @@
 
 #include "board.h"
 
-using namespace sudoku;
 using namespace std;
+
+namespace sudoku { 
 
 Board::Board(const vector<uint8_t> &values)
 {
-    uint8_t upperBound = min(static_cast<uint8_t>(81), static_cast<uint8_t>(values.size()));
-    for (uint8_t i = 0; i < upperBound; i++)
+    size_t upperBound = min(static_cast<size_t>(81), values.size());
+    for (size_t i = 0; i < upperBound; i++)
     {
-        uint8_t lin = i / 9;
-        uint8_t col = i % 9;
+        size_t lin = i / 9;
+        size_t col = i % 9;
         _values[lin][col] = values[i];
     }
 }
@@ -205,8 +206,6 @@ Board& Board::operator=(const Board &board) noexcept
     }
     return *this;
 }
-
-namespace sudoku {
 
 ostream &operator<<(ostream &os, const Board &board)
 {

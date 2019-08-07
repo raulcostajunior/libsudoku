@@ -99,6 +99,8 @@ private:
         {0, 0, 0, 0, 0, 0, 0, 0, 0}};
 };
 
+std::ostream &operator<<(std::ostream &os, const Board &board);
+
 } // namespace sudoku
 
 #endif
