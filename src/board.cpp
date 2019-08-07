@@ -8,7 +8,8 @@
 
 using namespace std;
 
-namespace sudoku { 
+namespace sudoku
+{
 
 Board::Board(const vector<uint8_t> &values)
 {
@@ -178,7 +179,6 @@ bool Board::isComplete() const noexcept
     }
 }
 
-
 bool Board::operator==(const Board &board) const noexcept
 {
     for (uint8_t lin = 0; lin < 9; lin++)
@@ -194,8 +194,7 @@ bool Board::operator==(const Board &board) const noexcept
     return true;
 }
 
-
-Board& Board::operator=(const Board &board) noexcept
+Board &Board::operator=(const Board &board) noexcept
 {
     for (uint8_t lin = 0; lin < 9; lin++)
     {
@@ -209,8 +208,10 @@ Board& Board::operator=(const Board &board) noexcept
 
 ostream &operator<<(ostream &os, const Board &board)
 {
-    for (uint8_t lin = 0; lin < 9; lin++) {
-        for (uint8_t col = 0; col < 9; col++) {
+    for (uint8_t lin = 0; lin < 9; lin++)
+    {
+        for (uint8_t col = 0; col < 9; col++)
+        {
             os << board._values[lin][col] << " ";
         }
         os << endl;
