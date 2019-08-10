@@ -32,3 +32,12 @@ set_target_properties(libsudoku_static
       OUTPUT_NAME "sudoku"
 )
 
+add_executable(board_tests test/board_tests.cpp)
+target_link_libraries(board_tests libsudoku_static)
+
+enable_testing()
+
+add_test(
+  NAME board_tests 
+  COMMAND $<TARGET_FILE:board_tests> --success
+)
