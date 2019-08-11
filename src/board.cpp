@@ -110,16 +110,19 @@ bool Board::isValid() const noexcept
     {
         uint8_t initialCol = 3 * (sec % 3);
         uint8_t initialLin = 3 * (sec / 3);
+
+        // Values already found in section.
+        vector<uint8_t> secVals; 
+
         for (uint8_t lin = initialLin; lin < initialLin + 3; lin++)
         {
             for (uint8_t col = initialCol; col < initialCol + 3; col++)
             {
-                uint8_t secVals[9]{0, 0, 0, 0, 0, 0, 0, 0, 0};
-                uint8_t secValsIdx = 0;
                 uint8_t val = _values[lin][col];
                 if (val != 0)
                 {
-                    for (uint8_t i = 0; i < secValsIdx; i++)
+                    // Value is not blank; check if it has already happened in section
+                    for (size_t i = 0; i < secVals.size(); i++)
                     {
                         if (secVals[i] == val)
                         {
@@ -130,9 +133,8 @@ bool Board::isValid() const noexcept
                     // Value is new in the section; store it for
                     // comparing with other section values that will
                     // be scanned.
-                    secVals[secValsIdx] = val;
+                    secVals.push_back(val);
                 }
-                secValsIdx++;
             }
         }
     }
