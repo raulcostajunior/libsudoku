@@ -43,9 +43,22 @@ uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept
     return 0;
 }
 
-pair<bool, BoardValueError> Board::setValueAt(uint8_t line, uint8_t column, uint8_t value) noexcept
+pair<bool, BoardValueError> Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
 {
-    // TODO: add real body
+    if (value > 9) {
+        return make_pair(false, BoardValueError::INVALID_VALUE);
+    }
+
+    Board valueSetBoard(*this);
+    valueSetBoard._values[line][column] = value;
+    if (valueSetBoard.isValid()) {
+        // Value won't invalidate the board, so go ahead and set it.
+        _values[line][column] = value;
+        return make_pair(true, BoardValueError::NO_ERROR); 
+    } else {
+        return make_pair(false, BoardValueError::VALUE_INVALIDATES_BOARD);
+    }
+
     return make_pair(true, BoardValueError::NO_ERROR);
 }
 
@@ -214,7 +227,7 @@ ostream &operator<<(ostream &os, const Board &board)
     {
         for (uint8_t col = 0; col < 9; col++)
         {
-            os << board._values[lin][col] << " ";
+            os << static_cast<int>(board._values[lin][col]) << " ";
         }
         os << endl;
     }

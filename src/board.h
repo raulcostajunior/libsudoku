@@ -13,9 +13,7 @@ enum class BoardValueError : std::uint8_t
 {
     NO_ERROR,
     INVALID_VALUE,
-    VALUE_ALREADY_IN_ROW,
-    VALUE_ALREADY_IN_COLUMN,
-    VALUE_ALREADY_IN_SECTION // In the same 3x3 board section.
+    VALUE_INVALIDATES_BOARD
 };
 
 /**
@@ -56,7 +54,7 @@ public:
          * with 'false' in its first position and the error reason code in its second
          * position.
          */
-    std::pair<bool, BoardValueError> setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value) noexcept;
+    std::pair<bool, BoardValueError> setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
 
     /**
          * Clears the board by assigning the value 0 to all its positions.

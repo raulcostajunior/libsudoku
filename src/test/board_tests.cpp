@@ -6,8 +6,7 @@
 
 using namespace sudoku;
 
-
-    Board solved_board(
+    const Board solved_board(
         {
             2, 9, 5, 7, 4, 3, 8, 6, 1,
             4, 3, 1, 8, 6, 5, 9, 2, 7,
@@ -21,7 +20,7 @@ using namespace sudoku;
         }
     );
 
-    Board invalid_board_col_line(
+    const Board invalid_board_col_line(
         {
             2, 9, 5, 7, 4, 3, 8, 6, 2, // 2 is repeated across the first line and the last column.
             4, 3, 1, 8, 6, 5, 9, 2, 7,
@@ -36,7 +35,7 @@ using namespace sudoku;
     );
 
 
-    Board invalid_board_section(
+    const Board invalid_board_section(
         {
             2, 9, 5, 7, 4, 3, 8, 6, 1, // 2 is in first 3x3 section and 3 in third (top-bottom; left-right)
             4, 2, 1, 8, 6, 5, 9, 3, 7,
@@ -50,7 +49,7 @@ using namespace sudoku;
         }
     );
 
-    Board board_with_blanks(
+    const Board board_with_blanks(
         // Despite being incomplete, this board has no repetition violation - so it should be valid.
         {
             2, 9, 5, 7, 0, 3, 8, 6, 1, // a blank in the fifth column of first row 
@@ -65,7 +64,7 @@ using namespace sudoku;
         }
     );
 
-    Board clear_board(
+    const Board clear_board(
         {
             0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -137,4 +136,28 @@ TEST_CASE("Board copy generates equal boards")
 {
     Board board_copy(solved_board);
     REQUIRE(board_copy == solved_board);
+}
+
+TEST_CASE("Set value with out-of-range value is rejected")
+{
+    Board board(board_with_blanks);
+    auto result = board.setValueAt(0, 0, 12);
+    REQUIRE((!result.first && result.second == BoardValueError::INVALID_VALUE));
+    REQUIRE(board == board_with_blanks); // Board has not been changed.
+}
+
+TEST_CASE("Set value that makes board invalid is rejected")
+{
+    Board board(board_with_blanks);
+    auto result = board.setValueAt(0, 4, 6); // The correct value would be 4.
+    REQUIRE((!result.first && result.second == BoardValueError::VALUE_INVALIDATES_BOARD));
+    REQUIRE(board == board_with_blanks); // Board has not been changed.
+}
+
+TEST_CASE("Proper set value is accepted")
+{
+    Board board(board_with_blanks);
+    auto result = board.setValueAt(0, 4, 4);
+    REQUIRE((result.first && result.second == BoardValueError::NO_ERROR));
+    REQUIRE(board.valueAt(0, 4) == 4);
 }
