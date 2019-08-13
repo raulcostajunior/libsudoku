@@ -15,7 +15,9 @@ enum class SolverError : uint8_t
 {
     NO_ERROR,
     INVALID_BOARD,
-    BOARD_HAS_NO_SOLUTION
+    EMPTY_BOARD,
+    ALREADY_SOLVED,
+    HAS_NO_SOLUTION
 };
 
 class Solver

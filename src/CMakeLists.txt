@@ -35,9 +35,17 @@ set_target_properties(libsudoku_static
 add_executable(board_tests test/board_tests.cpp)
 target_link_libraries(board_tests libsudoku_static)
 
+add_executable(solver_tests test/solver_tests.cpp)
+target_link_libraries(solver_tests libsudoku_static)
+
 enable_testing()
 
 add_test(
   NAME board_tests 
   COMMAND $<TARGET_FILE:board_tests> --success
+)
+
+add_test(
+  NAME solver_tests
+  COMMAND $<TARGET_FILE:solver_tests> --success
 )
