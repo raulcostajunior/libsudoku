@@ -56,7 +56,7 @@ TEST_CASE("Empty board is not solvable")
     REQUIRE(result.first == false);
     REQUIRE(result.second == SolverError::EMPTY_BOARD);
 
-    result = Solver::solveBruteForce(clear_board, solved_board);
+    result = Solver::solveCreekMethod(clear_board, solved_board);
     REQUIRE(result.first == false);
     REQUIRE(result.second == SolverError::EMPTY_BOARD);
 }
@@ -68,7 +68,7 @@ TEST_CASE("Invalid board is not solvable")
     REQUIRE(result.first == false);
     REQUIRE(result.second == SolverError::INVALID_BOARD);
 
-    result = Solver::solveBruteForce(clear_board, solved_board);
+    result = Solver::solveCreekMethod(invalid_board, solved_board);
     REQUIRE(result.first == false);
     REQUIRE(result.second == SolverError::INVALID_BOARD);
 }
