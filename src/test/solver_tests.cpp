@@ -5,6 +5,7 @@
 #include "../solver.h"
 
 using namespace sudoku;
+using namespace std;
 
 const Board clear_board(
     {
@@ -49,6 +50,20 @@ const Board invalid_board(
     }
 );
 
+const Board solvable_board(
+    {
+        0, 0, 6, 0, 0, 8, 5, 0, 0,
+        0, 0, 0, 0, 7, 0, 6, 1, 3,
+        0, 0, 0, 0, 0, 0, 0, 0, 9,
+        0, 0, 0, 0, 9, 0, 0, 0, 1,
+        0, 0, 1, 0, 0, 0, 8, 0, 0,
+        4, 0, 0, 5, 3, 0, 0, 0, 0,
+        1, 0, 7, 0, 5, 3, 0, 0, 0,
+        0, 5, 0, 0, 6, 4, 0, 0, 0,
+        3, 0, 0, 1, 0, 0, 0, 6, 0,
+    }
+);
+
 TEST_CASE("Empty board is not solvable")
 {
     Board solved_board;
@@ -73,3 +88,18 @@ TEST_CASE("Invalid board is not solvable")
     REQUIRE(result.second == SolverError::INVALID_BOARD);
 }
 
+TEST_CASE("BruteForce cannot resolve unsolvable_board")
+{
+    Board solved_board;
+    auto result = Solver::solveBruteForce(unsolvable_board, solved_board);
+    REQUIRE(result.first == false);
+    REQUIRE(result.second == SolverError::HAS_NO_SOLUTION);
+}
+
+TEST_CASE("BruteForce can resolve solvable_board")
+{
+    Board solved_board;
+    auto result = Solver::solveBruteForce(solvable_board, solved_board);
+    REQUIRE(result.first == true);
+    REQUIRE(solved_board.isComplete());
+}

@@ -77,7 +77,7 @@ bool Board::isValid() const noexcept
 {
     // Checks if any value other than blank repeats across
     // any line.
-    for (uint8_t lin = 0; lin < 8; lin++)
+    for (uint8_t lin = 0; lin < 9; lin++)
     {
         for (uint8_t col = 0; col < 8; col++)
         {
@@ -98,14 +98,14 @@ bool Board::isValid() const noexcept
 
     // Checks if any value other than blank repeats across
     // any column.
-    for (uint8_t col = 0; col < 8; col++)
+    for (uint8_t col = 0; col < 9; col++)
     {
         for (uint8_t lin = 0; lin < 8; lin++)
         {
             uint8_t val = _values[lin][col];
             if (val != 0)
             {
-                for (uint8_t pos = lin + 1; lin < 9; lin++)
+                for (uint8_t pos = lin + 1; pos < 9; pos++)
                 {
                     if (val == _values[pos][col])
                     {
