@@ -67,11 +67,7 @@ const Board solvable_board(
 TEST_CASE("Empty board is not solvable")
 {
     Board solved_board;
-    auto result = Solver::solveBruteForce(clear_board, solved_board);
-    REQUIRE(result.first == false);
-    REQUIRE(result.second == SolverError::EMPTY_BOARD);
-
-    result = Solver::solveCreekMethod(clear_board, solved_board);
+    auto result = Solver::solve(clear_board, solved_board);
     REQUIRE(result.first == false);
     REQUIRE(result.second == SolverError::EMPTY_BOARD);
 }
@@ -79,27 +75,23 @@ TEST_CASE("Empty board is not solvable")
 TEST_CASE("Invalid board is not solvable")
 {
     Board solved_board;
-    auto result = Solver::solveBruteForce(invalid_board, solved_board);
-    REQUIRE(result.first == false);
-    REQUIRE(result.second == SolverError::INVALID_BOARD);
-
-    result = Solver::solveCreekMethod(invalid_board, solved_board);
+    auto result = Solver::solve(invalid_board, solved_board);
     REQUIRE(result.first == false);
     REQUIRE(result.second == SolverError::INVALID_BOARD);
 }
 
-TEST_CASE("BruteForce cannot resolve unsolvable_board")
+TEST_CASE("Cannot solve unsolvable_board")
 {
     Board solved_board;
-    auto result = Solver::solveBruteForce(unsolvable_board, solved_board);
+    auto result = Solver::solve(unsolvable_board, solved_board);
     REQUIRE(result.first == false);
     REQUIRE(result.second == SolverError::HAS_NO_SOLUTION);
 }
 
-TEST_CASE("BruteForce can resolve solvable_board")
+TEST_CASE("Can solve solvable_board")
 {
     Board solved_board;
-    auto result = Solver::solveBruteForce(solvable_board, solved_board);
+    auto result = Solver::solve(solvable_board, solved_board);
     REQUIRE(result.first == true);
     REQUIRE(solved_board.isComplete());
 }

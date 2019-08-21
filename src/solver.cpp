@@ -8,7 +8,7 @@
 using namespace sudoku;
 using namespace std;
 
-pair<bool, SolverError> Solver::solveBruteForce(const Board &board, Board &solvedBoard)
+pair<bool, SolverError> Solver::solve(const Board &board, Board &solvedBoard)
 {
     auto solvable = Solver::isBoardSolvable(board);
     if (!solvable.first) {
@@ -63,18 +63,19 @@ pair<bool, SolverError> Solver::solveBruteForce(const Board &board, Board &solve
     }
 }
 
-pair<bool, SolverError> Solver::solveCreekMethod(const Board &board, Board &solvedBoard)
+
+pair<bool, SolverError> Solver::solveForGood(const Board &board, vector<Board> &solvedBoards)
 {
     auto solvable = Solver::isBoardSolvable(board);
     if (!solvable.first) {
-        // Board is not solvable
+        // Board is not solvable.
         return solvable;
     }
 
-    // TODO: add solution algorithm
-    
+    // TODO: add real method body
     return make_pair(true, SolverError::NO_ERROR);
 }
+
 
 pair<bool, SolverError> Solver::isBoardSolvable(const Board &board) {
     bool solvable = true;
