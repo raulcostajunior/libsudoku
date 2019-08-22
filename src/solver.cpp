@@ -104,7 +104,7 @@ pair<bool, SolverError> Solver::solveForGood(const Board &board, vector<Board> &
             }
         }
     }
-
+     
     for (const auto &emptyCell : emptyCells)
     {
         for (uint8_t value = 1; value < 10; value++) 
@@ -112,16 +112,24 @@ pair<bool, SolverError> Solver::solveForGood(const Board &board, vector<Board> &
             Board candidateBoard = board;
             if (candidateBoard.setValueAt(emptyCell.first, emptyCell.second, value).first)
             {
-                // The current empty cell with the current val is a candidate for 
+                // The current empty cell with the current value is a candidate for 
                 // having a solution - tries to solve it.
                 Board solvedBoard;
                 auto result = Solver::solve(candidateBoard, solvedBoard);
                 if (result.first) 
                 {
+                    // The board could be solved or the insertion of the last value solved it.
                     if (find(begin(solvedBoards), end(solvedBoards), solvedBoard) == end(solvedBoards)) 
                     {
                         // Solved board is not among the current solutions; add it.
                         solvedBoards.push_back(solvedBoard);
+                    }
+                } else if (result.second == SolverError::ALREADY_SOLVED)
+                {
+                    // The insertion of value solved candidateBoard
+                    if (find(begin(solvedBoards), end(solvedBoards), candidateBoard) == end(solvedBoards)) 
+                    {
+                        solvedBoards.push_back(candidateBoard);
                     }
                 }
             }
