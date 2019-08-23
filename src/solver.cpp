@@ -9,6 +9,37 @@
 using namespace sudoku;
 using namespace std;
 
+
+Solver::Solver(): _asyncSolvingCancelled(false), _asyncSolvingActive(false) {}
+
+Solver::~Solver() {
+    if (_asyncSolvingActive) 
+    {
+        cancelAsyncSolving();
+    }
+    if (_pSolveForGoodWorker != nullptr && (*_pSolveForGoodWorker).joinable())
+    {
+        (*_pSolveForGoodWorker).join();
+    }
+}
+
+bool Solver::asyncSolveForGood(const Board &board,
+                               const SolverProgressCallback &fnProgress,
+                               const SolverFinishedCallback &fnFinished)  {
+    if (_asyncSolvingActive) 
+    {
+        // Only one solving process can be active at once.
+        return false;
+    }
+
+    _asyncSolvingActive = true;
+    _asyncSolvingCancelled = false;
+
+    _pSolveForGoodWorker.reset(new thread(solveForGood, board, fnProgress, fnFinished));
+
+    return true;
+}
+
 SolverResult Solver::solve(const Board &board, Board &solvedBoard)
 {
     auto solvable = checkBoard(board);
@@ -82,13 +113,20 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard)
     }
 }
 
-SolverResult Solver::solveForGood(const Board &board, vector<Board> &solvedBoards)
+void Solver::solveForGood(const Board &board, 
+                          const SolverProgressCallback &fnProgress,
+                          const SolverFinishedCallback &fnFinished)
 {
+    vector<Board> solvedBoards;
+
     auto solvable = checkBoard(board);
     if (solvable != SolverResult::NO_ERROR)
     {
         // Board is not solvable.
-        return solvable;
+        fnFinished(solvable, solvedBoards);
+        _asyncSolvingActive = false;
+        _asyncSolvingCancelled = false;
+        return;
     }
 
     // Gather empty cells
@@ -105,8 +143,19 @@ SolverResult Solver::solveForGood(const Board &board, vector<Board> &solvedBoard
         }
     }
      
-    for (const auto &emptyCell : emptyCells)
+    for (size_t i = 0; i < emptyCells.size(); i++) 
     {
+        if (_asyncSolvingCancelled) {
+            fnFinished(SolverResult::SOLVING_CANCELLED, solvedBoards);
+            _asyncSolvingActive = false;
+            _asyncSolvingCancelled = false;
+            return;
+        }
+
+        auto emptyCell = emptyCells[i];
+
+        fnProgress((double)(emptyCells.size()/(i+1))*100.0, solvedBoards.size());
+
         for (uint8_t value = 1; value < 10; value++) 
         {
             Board candidateBoard = board;
@@ -137,11 +186,13 @@ SolverResult Solver::solveForGood(const Board &board, vector<Board> &solvedBoard
     }
 
     if (solvedBoards.size() < 1) {
-        return SolverResult::HAS_NO_SOLUTION;
+        fnFinished(SolverResult::HAS_NO_SOLUTION, solvedBoards);
+    } else {
+        fnFinished(SolverResult::NO_ERROR, solvedBoards);
     }
-    else {
-        return SolverResult::NO_ERROR; 
-    }
+
+    _asyncSolvingActive = false;
+    _asyncSolvingCancelled = false;
 }
 
 SolverResult Solver::checkBoard(const Board &board)
