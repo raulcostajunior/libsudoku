@@ -97,40 +97,42 @@ const Board solvable_two_solutions(
 TEST_CASE("Empty board is not solvable")
 {
     Board solved_board;
-    auto result = Solver::solve(clear_board, solved_board);
-    REQUIRE(result.first == false);
-    REQUIRE(result.second == SolverError::EMPTY_BOARD);
+    Solver solver;
+    auto result = solver.solve(clear_board, solved_board);
+    REQUIRE(result == SolverResult::EMPTY_BOARD);
 }
 
 TEST_CASE("Invalid board is not solvable")
 {
     Board solved_board;
-    auto result = Solver::solve(invalid_board, solved_board);
-    REQUIRE(result.first == false);
-    REQUIRE(result.second == SolverError::INVALID_BOARD);
+    Solver solver;
+    auto result = solver.solve(invalid_board, solved_board);
+    REQUIRE(result == SolverResult::INVALID_BOARD);
 }
 
 TEST_CASE("Cannot solve unsolvable_board")
 {
     Board solved_board;
-    auto result = Solver::solve(unsolvable_board, solved_board);
-    REQUIRE(result.first == false);
-    REQUIRE(result.second == SolverError::HAS_NO_SOLUTION);
+    Solver solver;
+    auto result = solver.solve(unsolvable_board, solved_board);
+    REQUIRE(result == SolverResult::HAS_NO_SOLUTION);
 }
 
 TEST_CASE("Can solve solvable_board")
 {
     Board solved_board;
-    auto result = Solver::solve(solvable_board, solved_board);
-    REQUIRE(result.first == true);
+    Solver solver;
+    auto result = solver.solve(solvable_board, solved_board);
+    REQUIRE(result == SolverResult::NO_ERROR);
     REQUIRE(solved_board.isComplete());
 }
 
 TEST_CASE("solveForGood finds one solution for board with sigle solution")
 {
     vector<Board> solved_boards;
-    auto result = Solver::solveForGood(solvable_one_solution, solved_boards);
-    REQUIRE(result.first == true);
+    Solver solver;
+    auto result = solver.solveForGood(solvable_one_solution, solved_boards);
+    REQUIRE(result == SolverResult::NO_ERROR);
     REQUIRE(solved_boards.size() == 1);
     REQUIRE(solved_boards[0].isComplete());
 }
@@ -138,8 +140,9 @@ TEST_CASE("solveForGood finds one solution for board with sigle solution")
 TEST_CASE("solveForGood finds two solutions for board with two solutions")
 {
     vector<Board> solved_boards;
-    auto result = Solver::solveForGood(solvable_two_solutions, solved_boards);
-    REQUIRE(result.first == true);
+    Solver solver;
+    auto result = solver.solveForGood(solvable_two_solutions, solved_boards);
+    REQUIRE(result == SolverResult::NO_ERROR);
     REQUIRE(solved_boards.size() == 2);
     REQUIRE(solved_boards[0].isComplete());
     REQUIRE(solved_boards[1].isComplete());
@@ -148,8 +151,9 @@ TEST_CASE("solveForGood finds two solutions for board with two solutions")
 TEST_CASE("All solutions found by solveForGood are valid")
 {
     vector<Board> solved_boards;
-    auto result = Solver::solveForGood(solvable_board, solved_boards);
-    REQUIRE(result.first == true);
+    Solver solver;
+    auto result = solver.solveForGood(solvable_board, solved_boards);
+    REQUIRE(result == SolverResult::NO_ERROR);
     for (size_t i = 0; i < solved_boards.size(); i++) {
        REQUIRE(solved_boards[i].isComplete()); 
     }

@@ -3,13 +3,12 @@
 
 #include <cstdint>
 #include <iostream>
-#include <utility>
 #include <vector>
 
 namespace sudoku
 {
 
-enum class BoardValueError : std::uint8_t
+enum class SetValueResult : std::uint8_t
 {
     NO_ERROR,
     INVALID_VALUE,
@@ -49,12 +48,10 @@ public:
          * @param column the column number (from 0 to 8).
          * @param the value to be set at position (line, column) of the board. Can
          * be a value from 0 to 9 - 0 meaning empty. 
-         * @return a pair with 'true' in its first position and 'BoardValueError::NO_ERROR'
-         * on its second position if the value could be set. Otherwise returns a pair
-         * with 'false' in its first position and the error reason code in its second
-         * position.
+         * @return a SetValueResult indicating the result of the operation. If 
+         * the return is not SetValueResult::NO_ERROR, the board won't be changed.
          */
-    std::pair<bool, BoardValueError> setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
+    SetValueResult setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
 
     /**
          * Clears the board by assigning the value 0 to all its positions.
@@ -82,8 +79,6 @@ public:
 
     Board &operator=(const Board &board) noexcept;
 
-    friend std::ostream &operator<<(std::ostream &os, const Board &board);
-
 private:
     std::uint8_t _values[9][9]{
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -97,8 +92,8 @@ private:
         {0, 0, 0, 0, 0, 0, 0, 0, 0}};
 };
 
-std::ostream &operator<<(std::ostream &os, const Board &board);
-
 } // namespace sudoku
+
+std::ostream &operator<<(std::ostream &os, const sudoku::Board &board);
 
 #endif

@@ -1,8 +1,9 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
+#include <atomic>
 #include <cstdint>
-#include <utility>
+#include <functional>
 #include <vector>
 
 namespace sudoku
@@ -10,14 +11,23 @@ namespace sudoku
 
 class Board;
 
-enum class SolverError : uint8_t
+enum class SolverResult : uint8_t
 {
     NO_ERROR,
     INVALID_BOARD,
     EMPTY_BOARD,
     ALREADY_SOLVED,
-    HAS_NO_SOLUTION
+    HAS_NO_SOLUTION,
+    SOLVING_CANCELLED
 };
+
+// Signature of callback to report progress of an async solving process.
+using SolverProgressCallback =
+    std::function<void(double /* progressPercentage */, unsigned /* numSolutions */)>;
+
+// Signature of callback to report result of an async solving process.
+using SolverFinishedCallback =
+    std::function<void(SolverResult /* result */, std::vector<Board> /* solvedBoards */)>;
 
 class Solver
 {
@@ -27,42 +37,61 @@ public:
      * Solve a Sudoku puzzle in a given board, if it is solvable.
      * 
      * @param board the board with the puzzle to be solved.
+     * 
      * @param solvedBoard the board with the solution found for the puzzle.
-     * @return a pair with 'true' in its first position and 'BoardValueError::NO_ERROR'
-     * on its second position if the puzzle could be solved. Otherwise, returns a pair
-     * with 'false' in its first position and the error reason code in its second
-     * position.
+     * 
+     * @return a SolverResult indicating the result of the operation.
      */
-    static std::pair<bool, SolverError> solve(const Board &board, Board &solvedBoard);
+    SolverResult solve(const Board &board, Board &solvedBoard);
 
     /**
-     * Finds all the solutions for a Sudoku puzzle in a given board, if it is solvable.
+     * Assynchronously finds all the solutions for a Sudoku puzzle in a given board, 
+     * if the board is solvable.
      * 
      * @param board the board with the puzzle to be solved.
-     * @param solvedBoards the boards with the solutions found for the puzzle.
-     * @return a pair with 'true' in its first position and 'BoardValueError::NO_ERROR'
-     * on its second position if the puzzle could be solved. Otherwise, returns a pair
-     * with 'false' in its first position and the error reason code in its second
-     * position.
+     * 
+     * @param fnProgress the callback for reporting progress of the solving process.
+     * 
+     * @param fnFinished the callback for reporing result of the solving process.
+     * 
+     * @return true if the asynchronous request for finding all solutions has been
+     * accepted. false if there's already an active solving process and the request
+     * got rejected.
      */
-    static std::pair<bool, SolverError> solveForGood(const Board &board, std::vector<Board> &solvedBoards);
-    
-private:
+    bool asyncSolveForGood(const Board &board,
+                           const SolverProgressCallback &fnProgress,
+                           const SolverFinishedCallback &fnFinished);
+
     /**
-     * Returns whether a given board is solvable (true) or not.
+     * Cancels an async solving processing if there's one going on.
+     * 
+     * Solver instances don't support more than one active async processing at a time.
+     */
+    void cancelAsyncSolving();
+
+private:
+
+    /**
+     * Checks whether a given board is potentially solvable.
      * If the board is not solvable, the reason for its insolvability
      * is also returned.
      * 
-     * @param board the board to be validated
-     * @return a pair with 'true' in its first position and 'BoardValueError::NO_ERROR'
-     * on its second position if the value could be set. Otherwise returns a pair
-     * with 'false' in its first position and the error reason code in its second
-     * position.
+     * @param board the board to be checked.
+     * 
+     * @return a SolverResult that indicates that board is potentially
+     * solvable when it equals SolverResult::NO_ERROR. Any other code
+     * indicates that the board is not solvable and indicate the reason
+     * why the board cannot be solved. 
      */
-    static std::pair<bool, SolverError> isBoardSolvable(const Board &board);
+    SolverResult checkBoard(const Board &board);
 
-    
+    // Internal worker that finds all the solutions to a given board.
+    void solveForGoodWorker(const Board &board,
+                            const SolverProgressCallback &fnProgress,
+                            const SolverFinishedCallback &fnFinished);
 
+    std::atomic<bool> asyncSolvingCancelled = false;
+    std::atomic<bool> asyncSolvingActive = false;
 };
 
 } // namespace sudoku

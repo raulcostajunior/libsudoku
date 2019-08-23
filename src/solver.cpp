@@ -9,10 +9,10 @@
 using namespace sudoku;
 using namespace std;
 
-pair<bool, SolverError> Solver::solve(const Board &board, Board &solvedBoard)
+SolverResult Solver::solve(const Board &board, Board &solvedBoard)
 {
-    auto solvable = Solver::isBoardSolvable(board);
-    if (!solvable.first)
+    auto solvable = checkBoard(board);
+    if (solvable != SolverResult::NO_ERROR)
     {
         // Board is not solvable.
         return solvable;
@@ -43,7 +43,7 @@ pair<bool, SolverError> Solver::solve(const Board &board, Board &solvedBoard)
         while (!currCellSolved && currCellVal <= 9)
         {
             auto result = solvedBoard.setValueAt(currCell.first, currCell.second, currCellVal);
-            if (result.first)
+            if (result == SetValueResult::NO_ERROR)
             {
                 currCellSolved = true;
             }
@@ -74,18 +74,18 @@ pair<bool, SolverError> Solver::solve(const Board &board, Board &solvedBoard)
     }
     if (boardUnsolvable)
     {
-        return make_pair(false, SolverError::HAS_NO_SOLUTION);
+        return SolverResult::HAS_NO_SOLUTION;
     }
     else
     {
-        return make_pair(true, SolverError::NO_ERROR);
+        return SolverResult::NO_ERROR;
     }
 }
 
-pair<bool, SolverError> Solver::solveForGood(const Board &board, vector<Board> &solvedBoards)
+SolverResult Solver::solveForGood(const Board &board, vector<Board> &solvedBoards)
 {
-    auto solvable = Solver::isBoardSolvable(board);
-    if (!solvable.first)
+    auto solvable = checkBoard(board);
+    if (solvable != SolverResult::NO_ERROR)
     {
         // Board is not solvable.
         return solvable;
@@ -110,13 +110,13 @@ pair<bool, SolverError> Solver::solveForGood(const Board &board, vector<Board> &
         for (uint8_t value = 1; value < 10; value++) 
         {
             Board candidateBoard = board;
-            if (candidateBoard.setValueAt(emptyCell.first, emptyCell.second, value).first)
+            if (candidateBoard.setValueAt(emptyCell.first, emptyCell.second, value) == SetValueResult::NO_ERROR)
             {
                 // The current empty cell with the current value is a candidate for 
                 // having a solution - tries to solve it.
                 Board solvedBoard;
                 auto result = Solver::solve(candidateBoard, solvedBoard);
-                if (result.first) 
+                if (result == SolverResult::NO_ERROR) 
                 {
                     // The board could be solved or the insertion of the last value solved it.
                     if (find(begin(solvedBoards), end(solvedBoards), solvedBoard) == end(solvedBoards)) 
@@ -124,7 +124,7 @@ pair<bool, SolverError> Solver::solveForGood(const Board &board, vector<Board> &
                         // Solved board is not among the current solutions; add it.
                         solvedBoards.push_back(solvedBoard);
                     }
-                } else if (result.second == SolverError::ALREADY_SOLVED)
+                } else if (result == SolverResult::ALREADY_SOLVED)
                 {
                     // The insertion of value solved candidateBoard
                     if (find(begin(solvedBoards), end(solvedBoards), candidateBoard) == end(solvedBoards)) 
@@ -137,33 +137,33 @@ pair<bool, SolverError> Solver::solveForGood(const Board &board, vector<Board> &
     }
 
     if (solvedBoards.size() < 1) {
-        return make_pair(false, SolverError::HAS_NO_SOLUTION);
+        return SolverResult::HAS_NO_SOLUTION;
     }
     else {
-        return make_pair(true, SolverError::NO_ERROR); 
+        return SolverResult::NO_ERROR; 
     }
 }
 
-pair<bool, SolverError> Solver::isBoardSolvable(const Board &board)
+SolverResult Solver::checkBoard(const Board &board)
 {
     bool solvable = true;
-    SolverError error = SolverError::NO_ERROR;
+    SolverResult result = SolverResult::NO_ERROR;
 
     if (board.isEmpty())
     {
         solvable = false;
-        error = SolverError::EMPTY_BOARD;
+        result = SolverResult::EMPTY_BOARD;
     }
     else if (!board.isValid())
     {
         solvable = false;
-        error = SolverError::INVALID_BOARD;
+        result = SolverResult::INVALID_BOARD;
     }
     else if (board.isComplete())
     {
         solvable = false;
-        error = SolverError::ALREADY_SOLVED;
+        result = SolverResult::ALREADY_SOLVED;
     }
 
-    return make_pair(solvable, error);
+    return result;
 }

@@ -1,15 +1,12 @@
 #include <algorithm>
 #include <iostream>
 #include <cstdint>
-#include <utility>
 #include <vector>
 
 #include "board.h"
 
 using namespace std;
-
-namespace sudoku
-{
+using namespace sudoku;
 
 Board::Board(const vector<uint8_t> &values)
 {
@@ -43,10 +40,10 @@ uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept
     return 0;
 }
 
-pair<bool, BoardValueError> Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
+SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
 {
     if (value > 9) {
-        return make_pair(false, BoardValueError::INVALID_VALUE);
+        return SetValueResult::INVALID_VALUE;
     }
 
     Board valueSetBoard(*this);
@@ -54,12 +51,12 @@ pair<bool, BoardValueError> Board::setValueAt(uint8_t line, uint8_t column, uint
     if (valueSetBoard.isValid()) {
         // Value won't invalidate the board, so go ahead and set it.
         _values[line][column] = value;
-        return make_pair(true, BoardValueError::NO_ERROR); 
+        return SetValueResult::NO_ERROR; 
     } else {
-        return make_pair(false, BoardValueError::VALUE_INVALIDATES_BOARD);
+        return SetValueResult::VALUE_INVALIDATES_BOARD;
     }
 
-    return make_pair(true, BoardValueError::NO_ERROR);
+    return SetValueResult::NO_ERROR;
 }
 
 void Board::clear() noexcept
@@ -227,11 +224,9 @@ ostream &operator<<(ostream &os, const Board &board)
     {
         for (uint8_t col = 0; col < 9; col++)
         {
-            os << static_cast<int>(board._values[lin][col]) << " ";
+            os << static_cast<int>(board.valueAt(lin, col)) << " ";
         }
         os << endl;
     }
     return os;
 }
-
-} // namespace sudoku
