@@ -17,9 +17,9 @@ Solver::~Solver() {
     {
         cancelAsyncSolving();
     }
-    if (_pSolveForGoodWorker != nullptr && (*_pSolveForGoodWorker).joinable())
+    if (_solveForGoodWorker.joinable())
     {
-        (*_pSolveForGoodWorker).join();
+        _solveForGoodWorker.join();
     }
 }
 
@@ -35,7 +35,8 @@ bool Solver::asyncSolveForGood(const Board &board,
     _asyncSolvingActive = true;
     _asyncSolvingCancelled = false;
 
-    _pSolveForGoodWorker.reset(new thread(solveForGood, board, fnProgress, fnFinished));
+    _solveForGoodWorker = std::thread(&Solver::solveForGood, this,
+                                      board, fnProgress, fnFinished);
 
     return true;
 }
@@ -113,9 +114,9 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard)
     }
 }
 
-void Solver::solveForGood(const Board &board, 
-                          const SolverProgressCallback &fnProgress,
-                          const SolverFinishedCallback &fnFinished)
+void Solver::solveForGood(Board board, 
+                          SolverProgressCallback fnProgress,
+                          SolverFinishedCallback fnFinished)
 {
     vector<Board> solvedBoards;
 

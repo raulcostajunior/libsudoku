@@ -4,7 +4,6 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
-#include <memory>
 #include <thread>
 #include <vector>
 
@@ -37,6 +36,8 @@ class Solver
 public:
  
     Solver();
+
+    ~Solver();
 
     /**
      * Solves a Sudoku puzzle in a given board, if it is solvable.
@@ -92,18 +93,15 @@ private:
 
     // Internal method that does the real work for finding all the solutions 
     // to a given board.
-    void solveForGood(const Board &board,
-                      const SolverProgressCallback &fnProgress,
-                      const SolverFinishedCallback &fnFinished);
+    void solveForGood(Board board,
+                      SolverProgressCallback fnProgress,
+                      SolverFinishedCallback fnFinished);
 
     std::atomic<bool> _asyncSolvingCancelled;
     std::atomic<bool> _asyncSolvingActive;
 
-    // The pointer to the worker thread spawned by asyncSolveForGood.
-    // Could not declare the thread directly because it would be spawn 
-    // at construction time. A reference to the thread at instance level
-    // is needed so the thread can be joined at destruction time.
-    std::unique_ptr<std::thread> _pSolveForGoodWorker;
+    // The worker thread spawned by asyncSolveForGood.
+    std::thread _solveForGoodWorker;
 };
 
 } // namespace sudoku
