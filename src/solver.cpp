@@ -124,9 +124,12 @@ void Solver::solveForGood(Board board,
     if (solvable != SolverResult::NO_ERROR)
     {
         // Board is not solvable.
-        fnFinished(solvable, solvedBoards);
         _asyncSolvingActive = false;
         _asyncSolvingCancelled = false;
+        if (fnFinished != nullptr)
+        {
+            fnFinished(solvable, solvedBoards);
+        }
         return;
     }
 
@@ -147,15 +150,21 @@ void Solver::solveForGood(Board board,
     for (size_t i = 0; i < emptyCells.size(); i++) 
     {
         if (_asyncSolvingCancelled) {
-            fnFinished(SolverResult::SOLVING_CANCELLED, solvedBoards);
             _asyncSolvingActive = false;
             _asyncSolvingCancelled = false;
+            if (fnFinished != nullptr) 
+            {
+                fnFinished(SolverResult::SOLVING_CANCELLED, solvedBoards);
+            }
             return;
         }
 
         auto emptyCell = emptyCells[i];
 
-        fnProgress((double)(emptyCells.size()/(i+1))*100.0, solvedBoards.size());
+        if (fnProgress != nullptr)
+        {
+            fnProgress((double)(emptyCells.size()/(i+1))*100.0, solvedBoards.size());
+        }
 
         for (uint8_t value = 1; value < 10; value++) 
         {
@@ -186,14 +195,23 @@ void Solver::solveForGood(Board board,
         }
     }
 
-    if (solvedBoards.size() < 1) {
-        fnFinished(SolverResult::HAS_NO_SOLUTION, solvedBoards);
-    } else {
-        fnFinished(SolverResult::NO_ERROR, solvedBoards);
-    }
-
     _asyncSolvingActive = false;
     _asyncSolvingCancelled = false;
+
+    if (fnFinished != nullptr) 
+    {
+        if (solvedBoards.size() < 1) {
+            fnFinished(SolverResult::HAS_NO_SOLUTION, solvedBoards);
+        } else {
+            fnFinished(SolverResult::NO_ERROR, solvedBoards);
+        }
+    }
+
+}
+
+void Solver::cancelAsyncSolving() 
+{
+    _asyncSolvingCancelled = true;
 }
 
 SolverResult Solver::checkBoard(const Board &board)
