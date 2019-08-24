@@ -163,7 +163,7 @@ void Solver::solveForGood(Board board,
 
         if (fnProgress != nullptr)
         {
-            fnProgress((double)(emptyCells.size()/(i+1))*100.0, solvedBoards.size());
+            fnProgress(((i+1.0)/emptyCells.size())*100.0, solvedBoards.size());
         }
 
         for (uint8_t value = 1; value < 10; value++) 

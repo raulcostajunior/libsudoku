@@ -53,7 +53,7 @@ const Board invalid_board(
     }
 );
 
-const Board solvable_board(
+const Board solvable_board(  // Hard with just one solution
     {
         0, 0, 6, 0, 0, 8, 5, 0, 0,
         0, 0, 0, 0, 7, 0, 6, 1, 3,
@@ -95,10 +95,19 @@ const Board solvable_two_solutions(
     }
 );
 
-void asyncSolveProgress(double progressPercent, unsigned solutionsFound) {
-    clog << "Async solve at " << progressPercent << "%: "
-      << solutionsFound << " solution(s) found so far." << endl;
-}
+const Board solvable_many_solutions(
+    {
+        0, 9, 5, 0, 4, 0, 0, 6, 0,
+        4, 0, 1, 0, 6, 5, 9, 0, 0,
+        8, 0, 0, 1, 9, 0, 5, 4, 0,
+        0, 0, 7, 0, 5, 0, 0, 1, 6,
+        6, 1, 0, 3, 0, 7, 4, 9, 5,
+        5, 4, 9, 0, 1, 6, 0, 0, 0,
+        0, 6, 0, 5, 0, 0, 1, 0, 9,
+        9, 0, 0, 6, 0, 1, 0, 5, 0,
+        0, 5, 4, 9, 0, 0, 6, 0, 0,
+    }
+);
 
 TEST_CASE("Empty board is not solvable")
 {
@@ -133,13 +142,22 @@ TEST_CASE("Can solve solvable_board")
     REQUIRE(solved_board.isComplete());
 }
 
-TEST_CASE("solveForGood finds one solution for board with single solution")
+TEST_CASE("asyncSolveForGood finds one solution for board with single solution")
 {
     vector<Board> solved_boards;
     SolverResult result;
     atomic<bool> finished{false};
-
+    atomic<unsigned> solutionsFound;
+    atomic<double> progressPercent;
     Solver solver;
+
+    auto asyncSolveProgress = 
+         [&progressPercent, &solutionsFound] (double progress, unsigned solutions) 
+         {
+             progressPercent = progress;
+             solutionsFound = solutions;
+         };
+
     auto asyncSolveFinished = 
          [&solved_boards, &result, &finished] (SolverResult solverResult, vector<Board> solutions) 
          {
@@ -155,6 +173,10 @@ TEST_CASE("solveForGood finds one solution for board with single solution")
     {
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
+        if (numOfWaits > 2) {
+            clog << "AsyncSolve at " << progressPercent << "%: "
+                 << solutionsFound << " solution(s) found so far." << endl;
+        }
     }
 
     REQUIRE(finished);
@@ -163,28 +185,93 @@ TEST_CASE("solveForGood finds one solution for board with single solution")
     REQUIRE(solved_boards[0].isComplete());
 }
 
-TEST_CASE("solveForGood finds two solutions for board with two solutions")
+TEST_CASE("asyncSolveForGood finds two solutions for board with two solutions")
 {
     vector<Board> solved_boards;
     SolverResult result;
+    atomic<bool> finished{false};
+    atomic<unsigned> solutionsFound;
+    atomic<double> progressPercent;
+    Solver solver;
 
-    // Solver solver;
-    // auto result = solver.solveForGood(solvable_two_solutions, solved_boards);
-    // REQUIRE(result == SolverResult::NO_ERROR);
-    // REQUIRE(solved_boards.size() == 2);
-    // REQUIRE(solved_boards[0].isComplete());
-    // REQUIRE(solved_boards[1].isComplete());
+    auto asyncSolveProgress = 
+         [&progressPercent, &solutionsFound] (double progress, unsigned solutions) 
+         {
+             progressPercent = progress;
+             solutionsFound = solutions;
+         };
+
+    auto asyncSolveFinished = 
+         [&solved_boards, &result, &finished] (SolverResult solverResult, vector<Board> solutions) 
+         {
+             solved_boards = solutions;
+             result = solverResult;
+             finished = true;
+         };
+
+    solver.asyncSolveForGood(solvable_two_solutions, asyncSolveProgress, asyncSolveFinished);
+
+    int numOfWaits = 0;
+    while (!finished && numOfWaits < 60) 
+    {
+        this_thread::sleep_for(chrono::seconds(1));
+        numOfWaits++;
+        if (numOfWaits > 2) {
+            clog << "AsyncSolve at " << progressPercent << "%: "
+                 << solutionsFound << " solution(s) found so far." << endl;
+        }
+    }
+
+    REQUIRE(finished);
+    REQUIRE(result == SolverResult::NO_ERROR);
+    REQUIRE(solved_boards.size() == 2);
+    REQUIRE(solved_boards[0].isComplete());
+    REQUIRE(solved_boards[1].isComplete());
 }
 
-TEST_CASE("All solutions found by solveForGood are valid")
+TEST_CASE("All solutions found by asyncSolveForGood are valid")
 {
-    // vector<Board> solved_boards;
-    // Solver solver;
-    // bool started = solver.asyncSolveForGood(solvable_board, solved_boards);
-    // REQUIRE(result == SolverResult::NO_ERROR);
-    // for (size_t i = 0; i < solved_boards.size(); i++) {
-    //    REQUIRE(solved_boards[i].isComplete()); 
-    // }
+    vector<Board> solved_boards;
+    SolverResult result;
+    atomic<bool> finished{false};
+    atomic<unsigned> solutionsFound;
+    atomic<double> progressPercent;
+    Solver solver;
+
+    auto asyncSolveProgress = 
+         [&progressPercent, &solutionsFound] (double progress, unsigned solutions) 
+         {
+             progressPercent = progress;
+             solutionsFound = solutions;
+         };
+
+    auto asyncSolveFinished = 
+         [&solved_boards, &result, &finished] (SolverResult solverResult, vector<Board> solutions) 
+         {
+             solved_boards = solutions;
+             result = solverResult;
+             finished = true;
+         };
+
+    solver.asyncSolveForGood(solvable_many_solutions, asyncSolveProgress, asyncSolveFinished);
+
+    int numOfWaits = 0;
+    while (!finished && numOfWaits < 3600) 
+    {
+        this_thread::sleep_for(chrono::seconds(1));
+        numOfWaits++;
+        if (numOfWaits > 1) {
+            clog << "AsyncSolve at " << progressPercent << "%: "
+                 << solutionsFound << " solution(s) found so far." << endl;
+        }
+    }
+
+    REQUIRE(finished);
+    REQUIRE(result == SolverResult::NO_ERROR);
+    for (size_t i = 0; i < solved_boards.size(); i++)
+    {
+        REQUIRE(solved_boards[i].isComplete());
+    }
 }
 
 TEST_CASE("Cannot spawn more than one asyncSolveForGood simultaneously")
