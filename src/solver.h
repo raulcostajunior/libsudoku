@@ -19,7 +19,9 @@ enum class SolverResult : uint8_t
     EMPTY_BOARD,
     ALREADY_SOLVED,
     HAS_NO_SOLUTION,
-    SOLVING_CANCELLED
+    ASYNC_SOLVING_CANCELLED,
+    ASYNC_SOLVING_SUBMITTED,
+    ASYNC_SOLVING_BUSY
 };
 
 // Signature of callback to report progress of an async solving process.
@@ -60,13 +62,13 @@ public:
      * 
      * @param fnFinished the callback for reporing result of the solving process.
      * 
-     * @return true if the asynchronous request for finding all solutions has been
-     * accepted. false if there's already an active solving process and the request
-     * got rejected.
+     * @return SolverResult::ASYNC_SOLVING_SUBMITTED if the asynchronous request for 
+     * finding all solutions has been accepted or SolverResult::ASYNC_SOLVING_BUSY 
+     * if there's already an active solving process and the request got rejected.
      */
-    bool asyncSolveForGood(const Board &board,
-                           const SolverProgressCallback &fnProgress,
-                           const SolverFinishedCallback &fnFinished);
+    SolverResult asyncSolveForGood(const Board &board,
+                                   const SolverProgressCallback &fnProgress,
+                                   const SolverFinishedCallback &fnFinished);
 
     /**
      * Cancels an async solving processing if there's one going on.

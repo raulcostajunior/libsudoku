@@ -23,13 +23,13 @@ Solver::~Solver() {
     }
 }
 
-bool Solver::asyncSolveForGood(const Board &board,
-                               const SolverProgressCallback &fnProgress,
-                               const SolverFinishedCallback &fnFinished)  {
+SolverResult Solver::asyncSolveForGood(const Board &board,
+                                       const SolverProgressCallback &fnProgress,
+                                       const SolverFinishedCallback &fnFinished)  {
     if (_asyncSolvingActive) 
     {
         // Only one solving process can be active at once.
-        return false;
+        return SolverResult::ASYNC_SOLVING_BUSY;
     }
 
     _asyncSolvingActive = true;
@@ -38,7 +38,7 @@ bool Solver::asyncSolveForGood(const Board &board,
     _solveForGoodWorker = std::thread(&Solver::solveForGood, this,
                                       board, fnProgress, fnFinished);
 
-    return true;
+    return SolverResult::ASYNC_SOLVING_SUBMITTED;
 }
 
 SolverResult Solver::solve(const Board &board, Board &solvedBoard)
@@ -154,7 +154,7 @@ void Solver::solveForGood(Board board,
             _asyncSolvingCancelled = false;
             if (fnFinished != nullptr) 
             {
-                fnFinished(SolverResult::SOLVING_CANCELLED, solvedBoards);
+                fnFinished(SolverResult::ASYNC_SOLVING_CANCELLED, solvedBoards);
             }
             return;
         }
