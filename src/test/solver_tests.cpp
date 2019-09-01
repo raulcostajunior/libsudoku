@@ -202,7 +202,7 @@ TEST_CASE("Cannot solve solvable_board with invalid candidates vector")
 {
     Board solved_board;
     Solver solver;
-    vector<uint8_t> candidates{1,1,2,3,4,5,6,7,8};
+    vector<uint8_t> candidates{1,1,2,3,4,5,6,7,9};
     auto result = solver.solve(solvable_board, candidates, solved_board);
     REQUIRE(result == SolverResult::INVALID_CANDIDATES_VECTOR);
 }
