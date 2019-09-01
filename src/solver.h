@@ -19,6 +19,7 @@ enum class SolverResult : uint8_t
     EMPTY_BOARD,
     ALREADY_SOLVED,
     HAS_NO_SOLUTION,
+    INVALID_CANDIDATES_VECTOR,
     ASYNC_SOLVING_CANCELLED,
     ASYNC_SOLVING_SUBMITTED,
     ASYNC_SOLVING_BUSY
@@ -51,6 +52,28 @@ public:
      * @return a SolverResult indicating the result of the operation.
      */
     SolverResult solve(const Board &board, Board &solvedBoard);
+
+    /**
+     * Solves a Sudoku puzzle in a given board, if it is solvable, using a
+     * vector of unique candidate values to search for the solution. The vector
+     * defines the order in which candidate values for an empty cell of the
+     * board being solved will be tried. Different vectors can lead to different
+     * solutions of the puzzle whenever there's more than one solution.
+     * 
+     * @param board the board with the puzzle to be solved.
+     * 
+     * @param candidates a vector of unique candidate values to be used
+     * in the search for the solution. The vector must contain all the integers 
+     * in the range of 1 to 9 (included) without any repetition. If the 
+     * candidates doesn't conform to those constraints, a 
+     * SolverResult::INVALID_VALUES_VECTOR is returned.
+     * 
+     * @param solvedBoard the board with the solution found for the puzzle.
+     * 
+     * @return a SolverResult indicating the result of the operation.
+     */
+    SolverResult solve(const Board &board, const std::vector<uint8_t> &candidates,
+                       Board &solvedBoard);
 
     /**
      * Assynchronously finds all the solutions for a Sudoku puzzle in a given board, 

@@ -198,6 +198,15 @@ TEST_CASE("Can solve solvable_board")
     REQUIRE(solved_board.isComplete());
 }
 
+TEST_CASE("Cannot solve solvable_board with invalid candidates vector")
+{
+    Board solved_board;
+    Solver solver;
+    vector<uint8_t> candidates{1,1,2,3,4,5,6,7,8};
+    auto result = solver.solve(solvable_board, candidates, solved_board);
+    REQUIRE(result == SolverResult::INVALID_CANDIDATES_VECTOR);
+}
+
 TEST_CASE("asyncSolveForGood finds one solution for board with single solution")
 {
     vector<Board> solved_boards;

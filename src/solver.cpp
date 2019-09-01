@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstdint>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -8,7 +9,6 @@
 
 using namespace sudoku;
 using namespace std;
-
 
 Solver::Solver(): _asyncSolvingCancelled(false), _asyncSolvingActive(false) {}
 
@@ -43,6 +43,19 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
 
 SolverResult Solver::solve(const Board &board, Board &solvedBoard)
 {
+    return solve(board, vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9}, solvedBoard);   
+}
+
+SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates, Board &solvedBoard) 
+{
+    // Checks the vector of candidate values - it must have the integers from 1 to 9 without 
+    // repetition.
+    auto minMax = minmax_element(candidates.begin(), candidates.end());
+    unordered_set<uint8_t> nonRep(candidates.begin(), candidates.end());
+    if (*minMax.first != 1 || *minMax.second != 9 || nonRep.size() != 9) {
+        return SolverResult::INVALID_CANDIDATES_VECTOR;
+    }
+
     auto solvable = checkBoard(board);
     if (solvable != SolverResult::NO_ERROR)
     {
@@ -70,11 +83,21 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard)
     while (currCellPos < emptyCells.size() && !boardUnsolvable)
     {
         auto currCell = emptyCells[currCellPos];
-        uint8_t currCellVal = solvedBoard.valueAt(currCell.first, currCell.second) + 1;
-        bool currCellSolved = false;
-        while (!currCellSolved && currCellVal <= 9)
+        auto currCellValue = solvedBoard.valueAt(currCell.first, currCell.second);
+        uint8_t candidatesIdx = 0;
+        if (currCellValue != 0) 
         {
-            auto result = solvedBoard.setValueAt(currCell.first, currCell.second, currCellVal);
+            // We're backtracking - must start with the next candidate value.
+            candidatesIdx = distance(candidates.begin(),
+                                     find(candidates.begin(), candidates.end(), currCellValue)) + 1;
+        } 
+            
+        bool currCellSolved = false;
+        while (!currCellSolved && candidatesIdx < 9)
+        {
+            auto result = solvedBoard.setValueAt(currCell.first, 
+                                                 currCell.second, 
+                                                 candidates[candidatesIdx]);
             if (result == SetValueResult::NO_ERROR)
             {
                 currCellSolved = true;
@@ -82,7 +105,7 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard)
             else
             {
                 // Try the next value in the cell.
-                currCellVal++;
+                candidatesIdx++;
             }
         }
         if (currCellSolved)
@@ -91,7 +114,7 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard)
         }
         else
         {
-            // currCellVal > 9 - have to rollback to the previous cell, if possible.
+            // currCellVal >= 9 - have to rollback to the previous cell, if possible.
             if (currCellPos > 0)
             {
                 // Resets the current cell before rolling back.
