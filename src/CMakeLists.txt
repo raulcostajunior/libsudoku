@@ -6,6 +6,9 @@ project (libsudoku
 )
 
 set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package (Threads)
 
 add_library (libsudoku_objs
     OBJECT
@@ -26,6 +29,8 @@ add_library (libsudoku_static
     STATIC
       $<TARGET_OBJECTS:libsudoku_objs>
 )
+
+target_link_libraries(libsudoku_static ${CMAKE_THREAD_LIBS_INIT})
 
 set_target_properties(libsudoku_static
     PROPERTIES
