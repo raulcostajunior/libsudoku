@@ -40,6 +40,24 @@ uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept
     return 0;
 }
 
+uint8_t Board::blankPositionCount() const noexcept
+{
+    uint8_t nBlanks = 0;
+
+    for (uint8_t lin = 0; lin < 9; lin++)
+    {
+        for (uint8_t col = 0; col < 9; col++)
+        {
+            if (_values[lin][col] == 0)
+            {
+                nBlanks++;
+            } 
+        }
+    }
+
+    return nBlanks;
+}
+
 SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
 {
     if (value > 9) {

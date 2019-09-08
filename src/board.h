@@ -69,6 +69,11 @@ public:
         */
     bool isEmpty() const noexcept;
 
+    /*
+     * Returns the number of blank positions in the board.
+     */
+    uint8_t blankPositionCount() const noexcept;
+
     /**
         * Returns true if a board has no blank position and is valid -
         * in other words, the board corresponds to a solved puzzle.

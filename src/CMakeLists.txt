@@ -43,6 +43,9 @@ target_link_libraries(board_tests libsudoku_static)
 add_executable(solver_tests test/solver_tests.cpp)
 target_link_libraries(solver_tests libsudoku_static)
 
+add_executable(generator_tests test/generator_tests.cpp)
+target_link_libraries(generator_tests libsudoku_static)
+
 enable_testing()
 
 add_test(
@@ -53,4 +56,9 @@ add_test(
 add_test(
   NAME solver_tests
   COMMAND $<TARGET_FILE:solver_tests> --success
+)
+
+add_test(
+  NAME generator_tests
+  COMMAND $<TARGET_FILE:generator_tests> --success
 )

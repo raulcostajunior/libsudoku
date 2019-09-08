@@ -1,7 +1,8 @@
 #include <atomic>
 #include <cstdint>
+#include <cstdlib>
+#include <ctime>
 #include <functional>
-#include <random>
 #include <thread>
 #include <unordered_set>
 #include <utility>
@@ -28,7 +29,44 @@ Generator::~Generator()
     }
 }
 
+uint8_t Generator::maxEmptyPositions(PuzzleDifficulty difficulty) noexcept
+{
+    uint8_t max;
+
+    switch (difficulty) 
+    {
+        case PuzzleDifficulty::HARD:
+        max = 61;
+        break;
+        case PuzzleDifficulty::MEDIUM:
+        max = 49;
+        break;
+        default: // EASY
+        max = 37;
+    }
+    return max;
+}
+
+uint8_t Generator::minEmptyPositions(PuzzleDifficulty difficulty) noexcept
+{
+    uint8_t min;
+
+    switch (difficulty) 
+    {
+        case PuzzleDifficulty::HARD:
+        min = 50;
+        break;
+        case PuzzleDifficulty::MEDIUM:
+        min = 38;
+        break;
+        default: // EASY
+        min = 26;
+    }
+    return min;
+}
+
 GeneratorResult Generator::asyncGenerate(PuzzleDifficulty difficulty,
+                                         const GeneratorProgressCallback &fnProgress,
                                          const GeneratorFinishedCallback &fnFinished)
 {
     if (_asyncGenActive)
@@ -41,89 +79,100 @@ GeneratorResult Generator::asyncGenerate(PuzzleDifficulty difficulty,
     _asyncGenCancelled = false;
 
     _genWorker = thread(&Generator::generate, this,
-                        difficulty, fnFinished);
+                        difficulty, fnProgress, fnFinished);
 
     return GeneratorResult::ASYNC_GEN_SUBMITTED;
 }
 
 void Generator::generate(PuzzleDifficulty difficulty,
-                         const GeneratorFinishedCallback fnFinished)
+                         GeneratorProgressCallback fnProgress,
+                         GeneratorFinishedCallback fnFinished)
 {
-    default_random_engine eng;
-    uniform_int_distribution<uint8_t> dist(1,9);
-    auto randValGen = bind(dist, eng);
+    srand(time(nullptr));
+
+    const uint8_t totalSteps = 4;
+    uint8_t currentStep = 1;
+
+    if (fnProgress != nullptr) 
+    {
+        fnProgress(currentStep, totalSteps);
+    }
 
     // Generate random candidates values vector.
     vector<uint8_t> candidates;
-    while (candidates.size() < 9) {
-        uint8_t val = randValGen();
+    while (candidates.size() < 8) {
+        uint8_t val =rand()%9 + 1;
         if (find(candidates.cbegin(), candidates.cend(), val) == candidates.cend())
         {
             candidates.push_back(val);
         }
-        
-        if (_asyncGenCancelled)
-        {
-            _asyncGenActive = false;
-            _asyncGenCancelled = false;
 
-            if (fnFinished != nullptr) 
-            {
-                fnFinished(GeneratorResult::ASYNC_GEN_CANCELLED, Board());
-            }
+        if (processGenCancelled(fnFinished)) 
+        {
             return;
         }
-
     }
-    // Looks for last missing value
-    vector<bool> valuesPresent(10, false);
+    // Looks for last missing value to add to candidates vector.
+    vector<bool> valuesPresent(9, false);
     for (const uint8_t val  : candidates) {
-        valuesPresent[val] = true;
+        valuesPresent[val-1] = true;
     }
     uint8_t missingVal = distance(valuesPresent.cbegin(),
-                                  find(valuesPresent.cbegin(), valuesPresent.cend(), false));
+                                  find(valuesPresent.cbegin(), valuesPresent.cend(), false)) + 1;
     candidates.push_back(missingVal);
 
-    // Initializes the generated board with 9 random positions with random unique values.
+    currentStep++;
+    if (fnProgress != nullptr) 
+    {
+        fnProgress(currentStep, totalSteps);
+    }
+
+    // Initializes the generated board with a random value at a random position.
     Board genBoard;
-    uniform_int_distribution<uint8_t> posDist(0,80);
-    auto randPosGen = bind(posDist, eng);
-    unordered_set<uint8_t> initPositions;
-    while (initPositions.size() < 10) 
-    {
-        uint8_t pos = randPosGen();
-        initPositions.insert(pos);
-    }
-    size_t candidatesIdx  = 0;
-    for (const uint8_t initPos : initPositions)
-    {
-        genBoard.setValueAt(initPos/9, initPos%9,
-                            candidates[candidatesIdx]);
-        candidatesIdx++;
-    }
-
-    if (_asyncGenCancelled)
-    {
-        _asyncGenActive = false;
-        _asyncGenCancelled = false;
-
-        if (fnFinished != nullptr) 
-        {
-            fnFinished(GeneratorResult::ASYNC_GEN_CANCELLED, Board());
-        }
+    uint8_t initPosition = rand()%81;
+    genBoard.setValueAt(initPosition/9, initPosition%9, candidates[5]);
+    if (processGenCancelled(fnFinished)) {
         return;
     }
 
-    // Solves the genBoard and calls the position remover corresponding
-    // to the difficulty level to derive genBoard from the solved genBoard.
+    currentStep++;
+    if (fnProgress != nullptr) 
+    {
+        fnProgress(currentStep, totalSteps);
+    }
+    // Solves the genBoard. 
     Board solvedGenBoard;
     Solver solver;
     solver.solve(genBoard, candidates, solvedGenBoard);
-    // TODO: define and call the position removers for each difficulty level.
+
+    // Removes a number of solved positions depending on the difficulty level.
+    currentStep++;
+    if (fnProgress != nullptr) 
+    {
+        fnProgress(currentStep, totalSteps);
+    }
+    uint8_t dist = Generator::maxEmptyPositions(difficulty) - Generator::minEmptyPositions(difficulty);
+    genBoard = solvedGenBoard;
+    uint8_t numEmptyPos = rand()%dist + Generator::minEmptyPositions(difficulty);
+    unordered_set<uint8_t> emptyPositions;
+    while (emptyPositions.size() <= numEmptyPos) 
+    {
+        uint8_t pos = rand()%81;
+        emptyPositions.insert(pos);
+
+        if (processGenCancelled(fnFinished)) 
+        {
+            return;
+        }
+    }
+
+    for (const uint8_t emptyPos : emptyPositions)
+    {
+        genBoard.setValueAt(emptyPos/9, emptyPos%9, 0);
+    }
 
     _asyncGenActive = false;
     _asyncGenCancelled = false;
-
     if (fnFinished != nullptr) 
     {
         fnFinished(GeneratorResult::NO_ERROR, genBoard);
@@ -135,5 +184,22 @@ void Generator::cancelAsyncGenerate()
     _asyncGenCancelled = true;
 }
 
+bool Generator::processGenCancelled(const GeneratorFinishedCallback &fnFinished) 
+{
+    if (_asyncGenCancelled)
+    {
+        _asyncGenActive = false;
+        _asyncGenCancelled = false;
 
+        if (fnFinished != nullptr) 
+        {
+            fnFinished(GeneratorResult::ASYNC_GEN_CANCELLED, Board());
+        }
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
 
+}

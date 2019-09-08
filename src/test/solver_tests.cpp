@@ -5,9 +5,11 @@
 #include "../solver.h"
 
 #include <atomic>
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <thread>
 
 using namespace sudoku;
 using namespace std;
@@ -160,6 +162,12 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions)
         }
     }
 
+    if (numOfWaits >= 900)
+    {
+        // Timed-out: cancel
+        solver.cancelAsyncSolving();
+    }
+
     clog << defaultfloat << setprecision(currentPrecision);
 
     return result;
@@ -245,8 +253,6 @@ TEST_CASE("All solutions found by asyncSolveForGood are valid")
 
 TEST_CASE("Cannot spawn more than one asyncSolveForGood simultaneously")
 {
-    vector<Board> solved_boards;
-
     // Starts a lengthy asynchronous solving ...
     Solver solver;
     auto result = solver.asyncSolveForGood(solvable_board, nullptr, nullptr);
