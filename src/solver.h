@@ -76,16 +76,6 @@ public:
                        Board &solvedBoard);
 
     /**
-     * Returns whether a given board has a unique solution.
-     * 
-     * @param board the board to be checked for solution uniqueness.
-     * 
-     * @return true if the board has a unique solution; false if it 
-     * has no solution or if it has multiple solutions.
-     */
-    bool hasUniqueSolution(const Board &board);
-
-    /**
      * Assynchronously finds all the solutions for a Sudoku puzzle in a given board, 
      * if the board is solvable.
      * 

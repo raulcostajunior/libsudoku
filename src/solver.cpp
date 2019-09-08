@@ -137,22 +137,6 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
     }
 }
 
-bool Solver::hasUniqueSolution(const Board &board) 
-{
-    bool hasUnique = true;
-
-    auto solvable = checkBoard(board);
-    if (solvable != SolverResult::NO_ERROR) 
-    {
-        hasUnique = false;
-    }
-
-    // TODO: use solveForGood to find out if the board has more
-    //       than one solution.
-
-    return hasUnique;
-}
-
 void Solver::solveForGood(Board board, 
                           SolverProgressCallback fnProgress,
                           SolverFinishedCallback fnFinished)
