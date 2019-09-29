@@ -12,12 +12,12 @@ find_package (Threads)
 
 add_library (libsudoku_objs
     OBJECT
-      board.h
-      board.cpp
-      solver.h
-      solver.cpp
-      generator.h
-      generator.cpp
+      src/board.h
+      src/board.cpp
+      src/solver.h
+      src/solver.cpp
+      src/generator.h
+      src/generator.cpp
 )
 
 set_target_properties (libsudoku_objs 
@@ -38,12 +38,15 @@ set_target_properties(libsudoku_static
 )
 
 add_executable(board_tests test/board_tests.cpp)
+target_include_directories(board_tests PRIVATE src)
 target_link_libraries(board_tests libsudoku_static)
 
 add_executable(solver_tests test/solver_tests.cpp)
+target_include_directories(solver_tests PRIVATE src)
 target_link_libraries(solver_tests libsudoku_static)
 
 add_executable(generator_tests test/generator_tests.cpp)
+target_include_directories(generator_tests PRIVATE src)
 target_link_libraries(generator_tests libsudoku_static)
 
 enable_testing()
