@@ -154,6 +154,39 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
     }
 }
 
+size_t Solver::countSolutions(const Board &board, size_t cutoffNumber)
+{
+    vector<Board> solvedBoards;
+    Board workingBoard;
+    SolverResult result = solve(board, vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9}, workingBoard, cutoffNumber, solvedBoards);
+    switch (result)
+    {
+        case SolverResult::NO_ERROR:
+            assert(solvedBoards.size() == cutoffNumber);
+            // I'm not sure what to do in the case where we actually did stop early,
+            // but the caller supplied this number, so presumably they understand that
+            // there might actually be more solutions.
+            return solvedBoards.size();
+        case SolverResult::INVALID_BOARD:
+            return 0;
+        case SolverResult::EMPTY_BOARD:
+            return 6670903752021072936960;
+            // Well, it is, even though that's too big to fit in a 64-bit int.
+        case SolverResult::ALREADY_SOLVED:
+            return 1;
+        case SolverResult::HAS_NO_SOLUTION:
+            // no *more* solutions
+            return solvedBoards.size();
+        case SolverResult::INVALID_CANDIDATES_VECTOR:
+        case SolverResult::ASYNC_SOLVING_SUBMITTED:
+        case SolverResult::ASYNC_SOLVING_BUSY:
+            assert(false);
+        case SolverResult::ASYNC_SOLVING_CANCELLED:
+            // Return what we found in the time allotted.
+            return solvedBoards.size();
+    }
+}
+
 void Solver::solveForGood(Board board, 
                           SolverProgressCallback fnProgress,
                           SolverFinishedCallback fnFinished)
