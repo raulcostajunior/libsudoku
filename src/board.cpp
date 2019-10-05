@@ -236,6 +236,11 @@ Board &Board::operator=(const Board &board) noexcept
     return *this;
 }
 
+uint8_t* Board::buffer_protocol_array_access() noexcept
+{
+    return &_values[0][0];
+}
+
 ostream &operator<<(ostream &os, const Board &board)
 {
     for (uint8_t lin = 0; lin < 9; lin++)
