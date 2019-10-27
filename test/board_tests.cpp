@@ -19,6 +19,20 @@ const Board solved_board(
     }
 );
 
+const Board invalid_board_value_range(
+    {
+        2, 19, 5, 7, 4, 3, 8, 6, 1, // 19 in the second column is out of range.
+        4,  3, 1, 8, 6, 5, 9, 2, 7,
+        8,  7, 6, 1, 9, 2, 5, 4, 3,
+        3,  8, 7, 4, 5, 9, 2, 1, 6,
+        6,  1, 2, 3, 8, 7, 4, 9, 5,
+        5,  4, 9, 2, 1, 6, 7, 3, 8,
+        7,  6, 3, 5, 2, 4, 1, 8, 9,
+        9,  2, 8, 6, 7, 1, 3, 5, 4,
+        1,  5, 4, 9, 3, 8, 6, 7, 2,
+    }
+);
+
 const Board invalid_board_col_line(
     {
         5, 1, 6, 8, 4, 9, 7, 3, 2, // 2 is repeated in the third and last columns.
@@ -102,6 +116,11 @@ TEST_CASE("Clear board isn't complete")
 TEST_CASE("Clear board is empty")
 {
     REQUIRE(clear_board.isEmpty());
+}
+
+TEST_CASE("Board with value out of range is invalid") 
+{
+    REQUIRE(!invalid_board_value_range.isValid());
 }
 
 TEST_CASE("Board with value repeated in line / column is invalid")

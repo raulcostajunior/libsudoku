@@ -90,6 +90,18 @@ void Board::clear() noexcept
 
 bool Board::isValid() const noexcept
 {
+    // Checks if any value is out of the allowed range
+    for (uint8_t lin = 0; lin < 9; lin++)
+    {
+        for (uint8_t col = 0; col < 9; col++)
+        {
+            if (_values[lin][col] > 9)
+            {
+                return false;
+            }
+        }
+    }
+
     // Checks if any value other than blank repeats across
     // any line.
     for (uint8_t lin = 0; lin < 9; lin++)
