@@ -10,9 +10,9 @@ namespace sudoku
 
 enum class SetValueResult : std::uint8_t
 {
-    NO_ERROR,
-    INVALID_VALUE,
-    VALUE_INVALIDATES_BOARD
+    NoError,
+    InvalidValue,
+    ValueInvalidatesBoard
 };
 
 /**

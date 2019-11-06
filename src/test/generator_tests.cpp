@@ -41,7 +41,7 @@ GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard, uin
          << endl;
 
     result = gen.asyncGenerate(difficulty, asyncGenProgress, asyncGenFinished);
-    if (result != GeneratorResult::ASYNC_GEN_SUBMITTED)
+    if (result != GeneratorResult::AsyncGenSubmitted)
     {
         return result;
     }
@@ -75,18 +75,18 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle")
 {
     Board genBoard;
 
-    auto resultGen = generate(PuzzleDifficulty::EASY, genBoard, _timeoutSecs);
-    REQUIRE(resultGen == GeneratorResult::NO_ERROR);
+    auto resultGen = generate(PuzzleDifficulty::Easy, genBoard, _timeoutSecs);
+    REQUIRE(resultGen == GeneratorResult::NoError);
     REQUIRE(genBoard.isValid());
 
     auto nBlanks = genBoard.blankPositionCount();
-    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::EASY)));
-    REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::EASY)));
+    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::Easy)));
+    REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::Easy)));
 
     Solver solver;
     Board solvedBoard;
     auto resultSolve = solver.solve(genBoard, solvedBoard);
-    REQUIRE(resultSolve == SolverResult::NO_ERROR);
+    REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
 }
 
@@ -94,18 +94,18 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle")
 {
     Board genBoard;
 
-    auto resultGen = generate(PuzzleDifficulty::MEDIUM, genBoard, _timeoutSecs);
-    REQUIRE(resultGen == GeneratorResult::NO_ERROR);
+    auto resultGen = generate(PuzzleDifficulty::Medium, genBoard, _timeoutSecs);
+    REQUIRE(resultGen == GeneratorResult::NoError);
     REQUIRE(genBoard.isValid());
 
     auto nBlanks = genBoard.blankPositionCount();
-    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::MEDIUM)));
-    REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::MEDIUM)));
+    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::Medium)));
+    REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::Medium)));
 
     Solver solver;
     Board solvedBoard;
     auto resultSolve = solver.solve(genBoard, solvedBoard);
-    REQUIRE(resultSolve == SolverResult::NO_ERROR);
+    REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
 }
 
@@ -113,18 +113,18 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle")
 {
     Board genBoard;
 
-    auto resultGen = generate(PuzzleDifficulty::HARD, genBoard,  _timeoutSecs);
-    REQUIRE(resultGen == GeneratorResult::NO_ERROR);
+    auto resultGen = generate(PuzzleDifficulty::Hard, genBoard,  _timeoutSecs);
+    REQUIRE(resultGen == GeneratorResult::NoError);
     REQUIRE(genBoard.isValid());
 
     auto nBlanks = genBoard.blankPositionCount();
-    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::HARD)));
-    REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::HARD)));
+    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::Hard)));
+    REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::Hard)));
 
     Solver solver;
     Board solvedBoard;
     auto resultSolve = solver.solve(genBoard, solvedBoard);
-    REQUIRE(resultSolve == SolverResult::NO_ERROR);
+    REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
     
 }
@@ -132,12 +132,12 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle")
 TEST_CASE("Cannot spawn more than one asyncGenerate simultaneously")
 {
     Generator gen;
-    auto result = gen.asyncGenerate(PuzzleDifficulty::HARD, nullptr, nullptr);
+    auto result = gen.asyncGenerate(PuzzleDifficulty::Hard, nullptr, nullptr);
 
-    auto secondResult = gen.asyncGenerate(PuzzleDifficulty::HARD, nullptr, nullptr);
+    auto secondResult = gen.asyncGenerate(PuzzleDifficulty::Hard, nullptr, nullptr);
 
-    REQUIRE(result == GeneratorResult::ASYNC_GEN_SUBMITTED);
-    REQUIRE(secondResult == GeneratorResult::ASYNC_GEN_BUSY);
+    REQUIRE(result == GeneratorResult::AsyncGenSubmitted);
+    REQUIRE(secondResult == GeneratorResult::AsyncGenBusy);
 
     gen.cancelAsyncGenerate();
 }

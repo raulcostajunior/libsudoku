@@ -14,15 +14,15 @@ class Board;
 
 enum class SolverResult : uint8_t
 {
-    NO_ERROR,
-    INVALID_BOARD,
-    EMPTY_BOARD,
-    ALREADY_SOLVED,
-    HAS_NO_SOLUTION,
-    INVALID_CANDIDATES_VECTOR,
-    ASYNC_SOLVING_CANCELLED,
-    ASYNC_SOLVING_SUBMITTED,
-    ASYNC_SOLVING_BUSY
+    NoError,
+    InvalidBoard,
+    EmptyBoard,
+    AlreadySolved,
+    HasNoSolution,
+    InvalidatesCandidatesVector,
+    AsyncSolvingCancelled,
+    AsyncSolvingSubmitted,
+    AsyncSolvingBusy
 };
 
 // Signature of callback to report progress of an async solving process.
