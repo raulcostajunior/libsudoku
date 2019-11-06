@@ -89,7 +89,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
                          GeneratorProgressCallback fnProgress,
                          GeneratorFinishedCallback fnFinished)
 {
-    srand(time(nullptr));
+    srand(static_cast<unsigned int>(time(nullptr)));
 
     const uint8_t totalSteps = 4;
     uint8_t currentStep = 1;
@@ -118,8 +118,9 @@ void Generator::generate(PuzzleDifficulty difficulty,
     for (const uint8_t val  : candidates) {
         valuesPresent[val-1] = true;
     }
-    uint8_t missingVal = distance(valuesPresent.cbegin(),
-                                  find(valuesPresent.cbegin(), valuesPresent.cend(), false)) + 1;
+    uint8_t missingVal = 
+             static_cast<uint8_t>(distance(valuesPresent.cbegin(),
+                                  find(valuesPresent.cbegin(), valuesPresent.cend(), false)) + 1);
     candidates.push_back(missingVal);
 
     currentStep++;

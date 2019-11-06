@@ -88,8 +88,9 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
         if (currCellValue != 0) 
         {
             // We're backtracking - must start with the next candidate value.
-            candidatesIdx = distance(candidates.begin(),
-                                     find(candidates.begin(), candidates.end(), currCellValue)) + 1;
+            candidatesIdx = 
+                 static_cast<uint8_t>(distance(candidates.begin(),
+                                      find(candidates.begin(), candidates.end(), currCellValue)) + 1);
         } 
             
         bool currCellSolved = false;
@@ -186,7 +187,7 @@ void Solver::solveForGood(Board board,
 
         if (fnProgress != nullptr)
         {
-            fnProgress(((i+1.0)/emptyCells.size())*100.0, solvedBoards.size());
+            fnProgress(((i+1.0)/emptyCells.size())*100.0, static_cast<unsigned int>(solvedBoards.size()));
         }
 
         for (uint8_t value = 1; value < 10; value++) 
