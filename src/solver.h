@@ -74,6 +74,9 @@ public:
      */
     SolverResult solve(const Board &board, const std::vector<uint8_t> &candidates,
                        Board &solvedBoard);
+    SolverResult solve(const Board &board, const std::vector<uint8_t> &candidates,
+                       Board &solvedBoard,
+                       size_t maxSolutions, std::vector<Board> &solvedBoards);
 
     /**
      * Assynchronously finds all the solutions for a Sudoku puzzle in a given board, 
