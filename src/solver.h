@@ -74,6 +74,21 @@ public:
      */
     SolverResult solve(const Board &board, const std::vector<uint8_t> &candidates,
                        Board &solvedBoard);
+    SolverResult solve(const Board &board, const std::vector<uint8_t> &candidates,
+                       Board &solvedBoard,
+                       size_t maxSolutions, std::vector<Board> &solvedBoards);
+
+    /**
+     * Counts the number of Sudoku solutions given a board.
+     * 
+     * @param board the board with the puzzle to be solved.
+     * 
+     * @param cutoffNumber number of solutions to look for before stopping.
+     * Use this so that a computation on a sparse board doesn't run forever.
+     * 
+     * @return a size_t with the number of solutions found.
+     */
+    size_t countSolutions(const Board &board, size_t cutoffNumber);
 
     /**
      * Assynchronously finds all the solutions for a Sudoku puzzle in a given board, 

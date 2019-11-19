@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <cassert>
 
 #include "solver.h"
 #include "board.h"
@@ -47,6 +48,13 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard)
 }
 
 SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates, Board &solvedBoard) 
+{
+    vector<Board> solvedBoards;
+    return solve(board, candidates, solvedBoard, 1, solvedBoards);
+}
+
+SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates, Board &solvedBoard,
+                           size_t maxSolutions, vector<Board> &solvedBoards)
 {
     // Checks the vector of candidate values - it must have the integers from 1 to 9 without 
     // repetition.
@@ -109,7 +117,15 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
                 candidatesIdx++;
             }
         }
-        if (currCellSolved)
+        // If we solved the current cell and it's the last, then we've solved the board.
+        if (currCellSolved && currCellPos == emptyCells.size()-1) {
+            assert(solvedBoard.isComplete());
+            solvedBoards.push_back(solvedBoard);
+            // We could reuse the working board to conserve memory.
+        }
+        // If we've solved all the cells, but we have not yet found as many solutions as we want,
+        // then we actually want to keep going.
+        if (currCellSolved && (currCellPos+1 < emptyCells.size() || solvedBoards.size() >= maxSolutions))
         {
             currCellPos++;
         }
@@ -134,7 +150,41 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
     }
     else
     {
+        assert(solvedBoard.isComplete());
         return SolverResult::NoError;
+    }
+}
+
+size_t Solver::countSolutions(const Board &board, size_t cutoffNumber)
+{
+    vector<Board> solvedBoards;
+    Board workingBoard;
+    SolverResult result = solve(board, vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9}, workingBoard, cutoffNumber, solvedBoards);
+    switch (result)
+    {
+        case SolverResult::NoError:
+            assert(solvedBoards.size() == cutoffNumber);
+            // I'm not sure what to do in the case where we actually did stop early,
+            // but the caller supplied this number, so presumably they understand that
+            // there might actually be more solutions.
+            return solvedBoards.size();
+        case SolverResult::InvalidBoard:
+            return 0;
+        case SolverResult::EmptyBoard:
+            return 6670903752021072936960;
+            // Well, it is, even though that's too big to fit in a 64-bit int.
+        case SolverResult::AlreadySolved:
+            return 1;
+        case SolverResult::HasNoSolution:
+            // no *more* solutions
+            return solvedBoards.size();
+        case SolverResult::InvalidatesCandidatesVector:
+        case SolverResult::AsyncSolvingSubmitted:
+        case SolverResult::AsyncSolvingBusy:
+            assert(false);
+        case SolverResult::AsyncSolvingCancelled:
+            // Return what we found in the time allotted.
+            return solvedBoards.size();
     }
 }
 
