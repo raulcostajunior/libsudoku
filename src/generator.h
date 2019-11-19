@@ -14,17 +14,17 @@ class Board;
 
 enum class PuzzleDifficulty : uint8_t
 {
-    EASY,
-    MEDIUM,
-    HARD
+    Easy,
+    Medium,
+    Hard
 };
 
 enum class GeneratorResult: uint8_t
 {
-    NO_ERROR,
-    ASYNC_GEN_CANCELLED,
-    ASYNC_GEN_SUBMITTED,
-    ASYNC_GEN_BUSY
+    NoError,
+    AsyncGenCancelled,
+    AsyncGenSubmitted,
+    AsyncGenBusy
 };
 
 // Signature of callback to report result of an async generation process.

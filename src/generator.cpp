@@ -36,10 +36,10 @@ uint8_t Generator::maxEmptyPositions(PuzzleDifficulty difficulty) noexcept
 
     switch (difficulty) 
     {
-        case PuzzleDifficulty::HARD:
+        case PuzzleDifficulty::Hard:
         max = 61;
         break;
-        case PuzzleDifficulty::MEDIUM:
+        case PuzzleDifficulty::Medium:
         max = 49;
         break;
         default: // EASY
@@ -54,10 +54,10 @@ uint8_t Generator::minEmptyPositions(PuzzleDifficulty difficulty) noexcept
 
     switch (difficulty) 
     {
-        case PuzzleDifficulty::HARD:
+        case PuzzleDifficulty::Hard:
         min = 50;
         break;
-        case PuzzleDifficulty::MEDIUM:
+        case PuzzleDifficulty::Medium:
         min = 38;
         break;
         default: // EASY
@@ -73,7 +73,7 @@ GeneratorResult Generator::asyncGenerate(PuzzleDifficulty difficulty,
     if (_asyncGenActive)
     {
         // Only one generating process can be active at once.
-        return GeneratorResult::ASYNC_GEN_BUSY;
+        return GeneratorResult::AsyncGenBusy;
     }
 
     _asyncGenActive = true;
@@ -82,14 +82,14 @@ GeneratorResult Generator::asyncGenerate(PuzzleDifficulty difficulty,
     _genWorker = thread(&Generator::generate, this,
                         difficulty, fnProgress, fnFinished);
 
-    return GeneratorResult::ASYNC_GEN_SUBMITTED;
+    return GeneratorResult::AsyncGenSubmitted;
 }
 
 void Generator::generate(PuzzleDifficulty difficulty,
                          GeneratorProgressCallback fnProgress,
                          GeneratorFinishedCallback fnFinished)
 {
-    srand(time(nullptr));
+    srand(static_cast<unsigned int>(time(nullptr)));
 
     const uint8_t totalSteps = 4;
     uint8_t currentStep = 1;
@@ -118,8 +118,9 @@ void Generator::generate(PuzzleDifficulty difficulty,
     for (const uint8_t val  : candidates) {
         valuesPresent[val-1] = true;
     }
-    uint8_t missingVal = distance(valuesPresent.cbegin(),
-                                  find(valuesPresent.cbegin(), valuesPresent.cend(), false)) + 1;
+    uint8_t missingVal = 
+             static_cast<uint8_t>(distance(valuesPresent.cbegin(),
+                                  find(valuesPresent.cbegin(), valuesPresent.cend(), false)) + 1);
     candidates.push_back(missingVal);
 
     currentStep++;
@@ -176,7 +177,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
     _asyncGenCancelled = false;
     if (fnFinished != nullptr) 
     {
-        fnFinished(GeneratorResult::NO_ERROR, genBoard);
+        fnFinished(GeneratorResult::NoError, genBoard);
     }
 }
 
@@ -194,7 +195,7 @@ bool Generator::processGenCancelled(const GeneratorFinishedCallback &fnFinished)
 
         if (fnFinished != nullptr) 
         {
-            fnFinished(GeneratorResult::ASYNC_GEN_CANCELLED, Board());
+            fnFinished(GeneratorResult::AsyncGenCancelled, Board());
         }
         return true;
     }

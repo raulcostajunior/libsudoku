@@ -141,7 +141,7 @@ TEST_CASE("Set value with out-of-range value is rejected")
 {
     Board board(board_with_blanks);
     auto result = board.setValueAt(0, 0, 12);
-    REQUIRE((result == SetValueResult::INVALID_VALUE));
+    REQUIRE((result == SetValueResult::InvalidValue));
     REQUIRE(board == board_with_blanks); // Board has not been changed.
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("Set value that makes board invalid is rejected")
 {
     Board board(board_with_blanks);
     auto result = board.setValueAt(0, 4, 6); // The correct value would be 4.
-    REQUIRE((result == SetValueResult::VALUE_INVALIDATES_BOARD));
+    REQUIRE((result == SetValueResult::ValueInvalidatesBoard));
     REQUIRE(board == board_with_blanks); // Board has not been changed.
 }
 
@@ -157,6 +157,6 @@ TEST_CASE("Proper set value is accepted")
 {
     Board board(board_with_blanks);
     auto result = board.setValueAt(0, 4, 4);
-    REQUIRE((result == SetValueResult::NO_ERROR));
+    REQUIRE((result == SetValueResult::NoError));
     REQUIRE(board.valueAt(0, 4) == 4);
 }

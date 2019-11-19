@@ -61,7 +61,7 @@ uint8_t Board::blankPositionCount() const noexcept
 SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
 {
     if (value > 9) {
-        return SetValueResult::INVALID_VALUE;
+        return SetValueResult::InvalidValue;
     }
 
     Board valueSetBoard(*this);
@@ -69,12 +69,12 @@ SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
     if (valueSetBoard.isValid()) {
         // Value won't invalidate the board, so go ahead and set it.
         _values[line][column] = value;
-        return SetValueResult::NO_ERROR; 
+        return SetValueResult::NoError; 
     } else {
-        return SetValueResult::VALUE_INVALIDATES_BOARD;
+        return SetValueResult::ValueInvalidatesBoard;
     }
 
-    return SetValueResult::NO_ERROR;
+    return SetValueResult::NoError;
 }
 
 void Board::clear() noexcept
@@ -90,6 +90,18 @@ void Board::clear() noexcept
 
 bool Board::isValid() const noexcept
 {
+    // Checks if any value is out of the allowed range
+    for (uint8_t lin = 0; lin < 9; lin++)
+    {
+        for (uint8_t col = 0; col < 9; col++)
+        {
+            if (_values[lin][col] > 9)
+            {
+                return false;
+            }
+        }
+    }
+
     // Checks if any value other than blank repeats across
     // any line.
     for (uint8_t lin = 0; lin < 9; lin++)
