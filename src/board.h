@@ -84,6 +84,8 @@ public:
 
     Board &operator=(const Board &board) noexcept;
 
+    std::uint8_t* buffer_protocol_array_access() noexcept;
+
 private:
     std::uint8_t _values[9][9]{
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
