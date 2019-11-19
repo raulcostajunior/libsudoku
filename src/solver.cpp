@@ -30,7 +30,7 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
     if (_asyncSolvingActive) 
     {
         // Only one solving process can be active at once.
-        return SolverResult::ASYNC_SOLVING_BUSY;
+        return SolverResult::AsyncSolvingBusy;
     }
 
     _asyncSolvingActive = true;
@@ -39,7 +39,7 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
     _solveForGoodWorker = std::thread(&Solver::solveForGood, this,
                                       board, fnProgress, fnFinished);
 
-    return SolverResult::ASYNC_SOLVING_SUBMITTED;
+    return SolverResult::AsyncSolvingSubmitted;
 }
 
 SolverResult Solver::solve(const Board &board, Board &solvedBoard)
@@ -61,11 +61,11 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
     auto minMax = minmax_element(candidates.begin(), candidates.end());
     unordered_set<uint8_t> nonRep(candidates.begin(), candidates.end());
     if (*minMax.first != 1 || *minMax.second != 9 || nonRep.size() != 9) {
-        return SolverResult::INVALID_CANDIDATES_VECTOR;
+        return SolverResult::InvalidatesCandidatesVector;
     }
 
     auto solvable = checkBoard(board);
-    if (solvable != SolverResult::NO_ERROR)
+    if (solvable != SolverResult::NoError)
     {
         // Board is not solvable.
         return solvable;
@@ -96,8 +96,9 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
         if (currCellValue != 0) 
         {
             // We're backtracking - must start with the next candidate value.
-            candidatesIdx = distance(candidates.begin(),
-                                     find(candidates.begin(), candidates.end(), currCellValue)) + 1;
+            candidatesIdx = 
+                 static_cast<uint8_t>(distance(candidates.begin(),
+                                      find(candidates.begin(), candidates.end(), currCellValue)) + 1);
         } 
             
         bool currCellSolved = false;
@@ -106,7 +107,7 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
             auto result = solvedBoard.setValueAt(currCell.first, 
                                                  currCell.second, 
                                                  candidates[candidatesIdx]);
-            if (result == SetValueResult::NO_ERROR)
+            if (result == SetValueResult::NoError)
             {
                 currCellSolved = true;
             }
@@ -145,12 +146,12 @@ SolverResult Solver::solve(const Board &board, const vector<uint8_t> &candidates
     }
     if (boardUnsolvable)
     {
-        return SolverResult::HAS_NO_SOLUTION;
+        return SolverResult::HasNoSolution;
     }
     else
     {
         assert(solvedBoard.isComplete());
-        return SolverResult::NO_ERROR;
+        return SolverResult::NoError;
     }
 }
 
@@ -161,7 +162,7 @@ void Solver::solveForGood(Board board,
     vector<Board> solvedBoards;
 
     auto solvable = checkBoard(board);
-    if (solvable != SolverResult::NO_ERROR)
+    if (solvable != SolverResult::NoError)
     {
         // Board is not solvable.
         _asyncSolvingActive = false;
@@ -194,7 +195,7 @@ void Solver::solveForGood(Board board,
             _asyncSolvingCancelled = false;
             if (fnFinished != nullptr) 
             {
-                fnFinished(SolverResult::ASYNC_SOLVING_CANCELLED, solvedBoards);
+                fnFinished(SolverResult::AsyncSolvingCancelled, solvedBoards);
             }
             return;
         }
@@ -203,19 +204,19 @@ void Solver::solveForGood(Board board,
 
         if (fnProgress != nullptr)
         {
-            fnProgress(((i+1.0)/emptyCells.size())*100.0, solvedBoards.size());
+            fnProgress(((i+1.0)/emptyCells.size())*100.0, static_cast<unsigned int>(solvedBoards.size()));
         }
 
         for (uint8_t value = 1; value < 10; value++) 
         {
             Board candidateBoard = board;
-            if (candidateBoard.setValueAt(emptyCell.first, emptyCell.second, value) == SetValueResult::NO_ERROR)
+            if (candidateBoard.setValueAt(emptyCell.first, emptyCell.second, value) == SetValueResult::NoError)
             {
                 // The current empty cell with the current value is a candidate for 
                 // having a solution - tries to solve it.
                 Board solvedBoard;
                 auto result = Solver::solve(candidateBoard, solvedBoard);
-                if (result == SolverResult::NO_ERROR) 
+                if (result == SolverResult::NoError) 
                 {
                     // The board could be solved or the insertion of the last value solved it.
                     if (find(begin(solvedBoards), end(solvedBoards), solvedBoard) == end(solvedBoards)) 
@@ -223,7 +224,7 @@ void Solver::solveForGood(Board board,
                         // Solved board is not among the current solutions; add it.
                         solvedBoards.push_back(solvedBoard);
                     }
-                } else if (result == SolverResult::ALREADY_SOLVED)
+                } else if (result == SolverResult::AlreadySolved)
                 {
                     // The insertion of value solved candidateBoard
                     if (find(begin(solvedBoards), end(solvedBoards), candidateBoard) == end(solvedBoards)) 
@@ -241,9 +242,9 @@ void Solver::solveForGood(Board board,
     if (fnFinished != nullptr) 
     {
         if (solvedBoards.size() < 1) {
-            fnFinished(SolverResult::HAS_NO_SOLUTION, solvedBoards);
+            fnFinished(SolverResult::HasNoSolution, solvedBoards);
         } else {
-            fnFinished(SolverResult::NO_ERROR, solvedBoards);
+            fnFinished(SolverResult::NoError, solvedBoards);
         }
     }
 
@@ -257,22 +258,22 @@ void Solver::cancelAsyncSolving()
 SolverResult Solver::checkBoard(const Board &board)
 {
     bool solvable = true;
-    SolverResult result = SolverResult::NO_ERROR;
+    SolverResult result = SolverResult::NoError;
 
     if (board.isEmpty())
     {
         solvable = false;
-        result = SolverResult::EMPTY_BOARD;
+        result = SolverResult::EmptyBoard;
     }
     else if (!board.isValid())
     {
         solvable = false;
-        result = SolverResult::INVALID_BOARD;
+        result = SolverResult::InvalidBoard;
     }
     else if (board.isComplete())
     {
         solvable = false;
-        result = SolverResult::ALREADY_SOLVED;
+        result = SolverResult::AlreadySolved;
     }
 
     return result;
