@@ -76,7 +76,7 @@ private:
 
     std::vector<uint8_t> randomPermutationOfIntegers(GeneratorFinishedCallback fnFinished);
 
-    Board fullSudokuBoardGivenCandidates(vector<uint8_t> candidates,
+    Board fullSudokuBoardGivenCandidates(std::vector<uint8_t> candidates,
                                          GeneratorProgressCallback fnProgress,
                                          GeneratorFinishedCallback fnFinished,
                                          uint8_t& currentStep, const uint8_t totalSteps);

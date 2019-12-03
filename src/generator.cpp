@@ -127,7 +127,7 @@ Board Generator::fullSudokuBoardGivenCandidates(vector<uint8_t> candidates,
     uint8_t initPosition = rand()%81;
     genBoard.setValueAt(initPosition/9, initPosition%9, candidates[5]);
     if (processGenCancelled(fnFinished)) {
-        return;
+        return genBoard;
     }
 
     currentStep++;
