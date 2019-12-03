@@ -99,7 +99,7 @@ vector<uint8_t> Generator::randomPermutationOfIntegers(GeneratorFinishedCallback
 
         if (processGenCancelled(fnFinished)) 
         {
-            return;
+            return candidates;
         }
     }
     // Looks for last missing value to add to candidates vector.
