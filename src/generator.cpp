@@ -85,21 +85,10 @@ GeneratorResult Generator::asyncGenerate(PuzzleDifficulty difficulty,
     return GeneratorResult::AsyncGenSubmitted;
 }
 
-void Generator::generate(PuzzleDifficulty difficulty,
-                         GeneratorProgressCallback fnProgress,
-                         GeneratorFinishedCallback fnFinished)
+vector<uint8_t> Generator::randomPermutationOfIntegers(GeneratorFinishedCallback fnFinished)
 {
     srand(static_cast<unsigned int>(time(nullptr)));
 
-    const uint8_t totalSteps = 4;
-    uint8_t currentStep = 1;
-
-    if (fnProgress != nullptr) 
-    {
-        fnProgress(currentStep, totalSteps);
-    }
-
-    // Generate random candidates values vector.
     vector<uint8_t> candidates;
     while (candidates.size() < 8) {
         uint8_t val =rand()%9 + 1;
@@ -110,7 +99,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
 
         if (processGenCancelled(fnFinished)) 
         {
-            return;
+            return candidates;
         }
     }
     // Looks for last missing value to add to candidates vector.
@@ -123,29 +112,59 @@ void Generator::generate(PuzzleDifficulty difficulty,
                                   find(valuesPresent.cbegin(), valuesPresent.cend(), false)) + 1);
     candidates.push_back(missingVal);
 
-    currentStep++;
-    if (fnProgress != nullptr) 
-    {
-        fnProgress(currentStep, totalSteps);
-    }
+    return candidates;
+}
 
-    // Initializes the generated board with a random value at a random position.
+Board Generator::fullSudokuBoardGivenCandidates(vector<uint8_t> candidates,
+                                                GeneratorProgressCallback fnProgress,
+                                                GeneratorFinishedCallback fnFinished,
+                                                uint8_t& currentStep, const uint8_t totalSteps)
+{
+    srand(static_cast<unsigned int>(time(nullptr)));
+
     Board genBoard;
+    // Initializes the generated board with a random value at a random position.
     uint8_t initPosition = rand()%81;
     genBoard.setValueAt(initPosition/9, initPosition%9, candidates[5]);
     if (processGenCancelled(fnFinished)) {
-        return;
+        return genBoard;
     }
+
+    currentStep++;
+    if (fnProgress != nullptr)
+    {
+        fnProgress(currentStep, totalSteps);
+    }
+    // Solves the genBoard.
+    Board solvedGenBoard;
+    Solver solver;
+    solver.solve(genBoard, candidates, solvedGenBoard);
+
+    return solvedGenBoard;
+}
+
+void Generator::generate(PuzzleDifficulty difficulty,
+                         GeneratorProgressCallback fnProgress,
+                         GeneratorFinishedCallback fnFinished)
+{
+    const uint8_t totalSteps = 4;
+    uint8_t currentStep = 1;
+
+    if (fnProgress != nullptr)
+    {
+        fnProgress(currentStep, totalSteps);
+    }
+
+    // Generate random candidates values vector.
+    vector<uint8_t> candidates = randomPermutationOfIntegers(fnFinished);
 
     currentStep++;
     if (fnProgress != nullptr) 
     {
         fnProgress(currentStep, totalSteps);
     }
-    // Solves the genBoard. 
-    Board solvedGenBoard;
-    Solver solver;
-    solver.solve(genBoard, candidates, solvedGenBoard);
+
+    Board genBoard = fullSudokuBoardGivenCandidates(candidates, fnProgress, fnFinished, currentStep, totalSteps);
 
     // Removes a number of solved positions depending on the difficulty level.
     currentStep++;
@@ -154,7 +173,6 @@ void Generator::generate(PuzzleDifficulty difficulty,
         fnProgress(currentStep, totalSteps);
     }
     uint8_t dist = Generator::maxEmptyPositions(difficulty) - Generator::minEmptyPositions(difficulty);
-    genBoard = solvedGenBoard;
     uint8_t numEmptyPos = rand()%dist + Generator::minEmptyPositions(difficulty);
     unordered_set<uint8_t> emptyPositions;
     while (emptyPositions.size() <= numEmptyPos) 

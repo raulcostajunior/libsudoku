@@ -6,6 +6,7 @@
 #include <functional>
 #include <thread>
 #include <utility>
+#include <vector>
 
 namespace sudoku
 {
@@ -72,6 +73,13 @@ public:
     static uint8_t minEmptyPositions(PuzzleDifficulty difficulty) noexcept;
 
 private:
+
+    std::vector<uint8_t> randomPermutationOfIntegers(GeneratorFinishedCallback fnFinished);
+
+    Board fullSudokuBoardGivenCandidates(std::vector<uint8_t> candidates,
+                                         GeneratorProgressCallback fnProgress,
+                                         GeneratorFinishedCallback fnFinished,
+                                         uint8_t& currentStep, const uint8_t totalSteps);
 
     void generate(PuzzleDifficulty difficulty,
                   GeneratorProgressCallback fnProgress,
