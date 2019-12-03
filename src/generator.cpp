@@ -85,21 +85,10 @@ GeneratorResult Generator::asyncGenerate(PuzzleDifficulty difficulty,
     return GeneratorResult::AsyncGenSubmitted;
 }
 
-void Generator::generate(PuzzleDifficulty difficulty,
-                         GeneratorProgressCallback fnProgress,
-                         GeneratorFinishedCallback fnFinished)
+vector<uint8_t> Generator::randomPermutationOfIntegers(GeneratorFinishedCallback fnFinished)
 {
     srand(static_cast<unsigned int>(time(nullptr)));
 
-    const uint8_t totalSteps = 4;
-    uint8_t currentStep = 1;
-
-    if (fnProgress != nullptr) 
-    {
-        fnProgress(currentStep, totalSteps);
-    }
-
-    // Generate random candidates values vector.
     vector<uint8_t> candidates;
     while (candidates.size() < 8) {
         uint8_t val =rand()%9 + 1;
@@ -123,6 +112,24 @@ void Generator::generate(PuzzleDifficulty difficulty,
                                   find(valuesPresent.cbegin(), valuesPresent.cend(), false)) + 1);
     candidates.push_back(missingVal);
 
+    return candidates;
+}
+
+void Generator::generate(PuzzleDifficulty difficulty,
+                         GeneratorProgressCallback fnProgress,
+                         GeneratorFinishedCallback fnFinished)
+{
+    const uint8_t totalSteps = 4;
+    uint8_t currentStep = 1;
+
+    if (fnProgress != nullptr)
+    {
+        fnProgress(currentStep, totalSteps);
+    }
+
+    // Generate random candidates values vector.
+    vector<uint8_t> candidates = randomPermutationOfIntegers(fnFinished);
+
     currentStep++;
     if (fnProgress != nullptr) 
     {
@@ -131,6 +138,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
 
     // Initializes the generated board with a random value at a random position.
     Board genBoard;
+    srand(static_cast<unsigned int>(time(nullptr)));
     uint8_t initPosition = rand()%81;
     genBoard.setValueAt(initPosition/9, initPosition%9, candidates[5]);
     if (processGenCancelled(fnFinished)) {

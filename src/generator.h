@@ -73,6 +73,8 @@ public:
 
 private:
 
+    vector<uint8_t> randomPermutationOfIntegers(GeneratorFinishedCallback fnFinished);
+
     void generate(PuzzleDifficulty difficulty,
                   GeneratorProgressCallback fnProgress,
                   GeneratorFinishedCallback fnFinished);
