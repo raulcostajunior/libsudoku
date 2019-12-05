@@ -15,10 +15,53 @@ enum class SetValueResult : std::uint8_t
     ValueInvalidatesBoard
 };
 
+template <typename CellValueType>
+class BoardBase
+{
+    /**
+         * Returns the side length of the small squares the board is composed
+         * of. Each of those small squares must contain all the symbols.
+         * 
+         * @return the length of one of the small squares on the board.
+         */
+    virtual std::uint8_t smallSquareSide() const noexcept = 0;
+
+    /**
+         * Retrieves the number of distinct symbols that may appear on the
+         * board.
+         * 
+         * @return the number of possible symbols.
+         */
+    std::uint8_t numberOfSymbols() const noexcept
+        { return smallSquareSide()*smallSquareSide(); };
+
+    /**
+         * Retrieves the value at a given (line, column) coordinate of the
+         * board. 
+         * 
+         * @param line the line number (starting at 0).
+         * @param column the column number (starting at 0).
+         * @return the value at position (line, column) of the board.
+         */
+    virtual CellValueType valueAt(std::uint8_t line, std::uint8_t column) const noexcept = 0;
+
+    /**
+         * Sets the value at a given (line, column) coordinate of the board. 
+         * 
+         * @param line the line number (starting at 0).
+         * @param column the column number (starting at 0).
+         * @param the value to be set at position (line, column) of the board.
+         * @return a SetValueResult indicating the result of the operation. If 
+         * the return is not SetValueResult::NoError, the board won't be changed.
+         */
+    virtual SetValueResult setValueAt(std::uint8_t line, std::uint8_t column, CellValueType value) = 0;
+
+};
+
 /**
  * @brief A 9x9 Sudoku board.
 */
-class Board
+class Board: public BoardBase<std::uint8_t>
 {
 
 public:
@@ -28,6 +71,14 @@ public:
     explicit Board(const std::vector<std::uint8_t> &values);
 
     Board(const Board &board);
+
+    /**
+         * Retrieves the length of one of the nine 3x3 squares that make up
+         * the full 9x9 board. For this class, obviously, this is always 3.
+         * 
+         * @return 3.
+         */
+    std::uint8_t smallSquareSide() const noexcept { return 3; };
 
     /**
          * Retrieves the value at a given (line, column) coordinate of the 
