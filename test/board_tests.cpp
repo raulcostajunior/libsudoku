@@ -179,3 +179,9 @@ TEST_CASE("Proper set value is accepted")
     REQUIRE((result == SetValueResult::NoError));
     REQUIRE(board.valueAt(0, 4) == 4);
 }
+
+TEST_CASE("BoardWithBitSets initially empty")
+{
+    BoardWithBitSets<3> board;
+    REQUIRE(board.isEmpty());
+}
