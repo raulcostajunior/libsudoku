@@ -278,6 +278,9 @@ SetValueResult BoardWithBitSets<SmallSquareSide>::setValueAt(std::uint8_t line, 
     BoardWithBitSets<SmallSquareSide> valueSetBoard(*this);
     valueSetBoard._values.at(line).at(column) = value;
     // if (valueSetBoard.isValid()) {
+    // Is there any good swift way to check whether the board is still valid/solvable?
+    // We could of course try to solve it, but that would take quite a while if we did that every time.
+    // But that might be the only way...
     if (true) {
         // Value won't invalidate the board, so go ahead and set it.
         _values[line][column] = value;
