@@ -108,7 +108,7 @@ public:
 
     /**
          * Retrieves the value at a given (line, column) coordinate of the 
-         * board.
+         * board. 
          * 
          * @param line the line number (from 0 to 8).
          * @param column the column number (from 0 to 8).
@@ -119,13 +119,13 @@ public:
     std::uint8_t valueAt(std::uint8_t line, std::uint8_t column) const noexcept;
 
     /**
-         * Sets the value at a given (line, column) coordinate of the board.
+         * Sets the value at a given (line, column) coordinate of the board. 
          * 
          * @param line the line number (from 0 to 8).
          * @param column the column number (from 0 to 8).
          * @param the value to be set at position (line, column) of the board. Can
          * be a value from 0 to 9 - 0 meaning empty. 
-         * @return a SetValueResult indicating the result of the operation. If
+         * @return a SetValueResult indicating the result of the operation. If 
          * the return is not SetValueResult::NO_ERROR, the board won't be changed.
          */
     SetValueResult setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
