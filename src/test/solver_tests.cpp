@@ -14,6 +14,8 @@
 using namespace sudoku;
 using namespace std;
 
+static uint8_t _timeoutSecs = 1800;
+
 const Board clear_board(
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -139,8 +141,13 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions)
              result = solverResult;
              finished = true;
 
-             clog << "\n.... AsyncSolve at 100.00%: "
-                  << solvedBoards.size() << " solution(s) found." << endl;
+             if (solverResult == SolverResult::AsyncSolvingCancelled) {
+                 clog << "\n... AsyncSolve cancelled - timeout after running for " 
+                     << _timeoutSecs << " seconds." << endl;
+             } else if (solverResult == SolverResult::NoError) {
+                 clog << "\n.... AsyncSolve at 100.00%: "
+                     << solvedBoards.size() << " solution(s) found." << endl;
+             }
          };
 
     result = solver.asyncSolveForGood(board, asyncSolveProgress, asyncSolveFinished);
@@ -152,7 +159,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions)
     // Prints out progress with "Poor's man animation".
     int numOfWaits = 0;
     string animPattern[4]{".   ", " .  ", "  . ", "   ."};
-    while (!finished && numOfWaits < 900) // waits until 15 minutes (900 secs.) for finished
+    while (!finished && numOfWaits < _timeoutSecs)
     {
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
@@ -162,10 +169,13 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions)
         }
     }
 
-    if (numOfWaits >= 900)
+    if (numOfWaits >= _timeoutSecs)
     {
-        // Timed-out: cancel
+        // Timed-out: cancel 
         solver.cancelAsyncSolving();
+        // Sleeps a while so the solver has enough time to call the finished callback and update the result with 
+        // SolverResult::AsyncSolvingCancelled value.
+        this_thread::sleep_for(chrono::seconds(1));
     }
 
     clog << defaultfloat << setprecision(currentPrecision);
