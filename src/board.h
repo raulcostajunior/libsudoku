@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 namespace sudoku
@@ -22,7 +23,6 @@ class Board
 {
 
 public:
-
     Board() = default;
 
     explicit Board(const std::vector<std::uint8_t> &values);
@@ -30,9 +30,9 @@ public:
     Board(const Board &board);
 
     /**
-         * Retrieves the value at a given (line, column) coordinate of the 
-         * board. 
-         * 
+         * Retrieves the value at a given (line, column) coordinate of the
+         * board.
+         *
          * @param line the line number (from 0 to 8).
          * @param column the column number (from 0 to 8).
          * @return the value at position (line, column) of the board. If the
@@ -42,13 +42,13 @@ public:
     std::uint8_t valueAt(std::uint8_t line, std::uint8_t column) const noexcept;
 
     /**
-         * Sets the value at a given (line, column) coordinate of the board. 
-         * 
+         * Sets the value at a given (line, column) coordinate of the board.
+         *
          * @param line the line number (from 0 to 8).
          * @param column the column number (from 0 to 8).
          * @param the value to be set at position (line, column) of the board. Can
-         * be a value from 0 to 9 - 0 meaning empty. 
-         * @return a SetValueResult indicating the result of the operation. If 
+         * be a value from 0 to 9 - 0 meaning empty.
+         * @return a SetValueResult indicating the result of the operation. If
          * the return is not SetValueResult::NO_ERROR, the board won't be changed.
          */
     SetValueResult setValueAt(std::uint8_t line, std::uint8_t column, std::uint8_t value);
@@ -59,10 +59,20 @@ public:
     void clear() noexcept;
 
     /**
-        *  Returns true if none of the values in the board violates the Sudoku non-repetition 
-        *  rules  across a line, a column or a 3x3 section.
+        *  Returns true if none of the values in the board violates the Sudoku non-repetition
+        *  rules  across a line, a column or a 3x3 section and if all the values are in the
+        *  appropriate range (between 0 and 9  - 0 being the value for empty positions).
         */
     bool isValid() const noexcept;
+
+    /**
+        * Returns the board positions that contains invalid values - either for being out of
+        * the allowed ranges or for violating the non repetition rules of Sudoku.
+        *
+        * @return a vector of pairs with the coordinates of the invalid positions - line as
+        * first and column as second.
+        */
+    std::vector<std::pair<std::uint8_t, std::uint8_t>> getInvalidPositions() const noexcept;
 
     /**
         * Returns true if all the positions in the board are blank (equal to 0).
@@ -95,6 +105,9 @@ private:
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+    std::vector<std::pair<std::uint8_t, std::uint8_t>>
+    findInvalidPositions(bool stopAtFirst) const noexcept;
 };
 
 } // namespace sudoku
