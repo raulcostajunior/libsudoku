@@ -50,8 +50,8 @@ const Board invalid_board_col_line(
 
 const Board invalid_board_section(
     {
-        2, 9, 5, 7, 4, 3, 8, 6, 1, // 2 is in first 3x3 section and 3 in third (top-bottom; left-right)
-        4, 2, 1, 8, 6, 5, 9, 3, 7,
+        2, 9, 5, 7, 4, 3, 8, 6, 1, // 2 repeated in first section and 2nd. column.
+        4, 2, 1, 8, 6, 5, 9, 3, 7, // 3 repeated in third section and 8th. column.
         8, 7, 6, 1, 9, 2, 5, 4, 3,
         3, 8, 7, 4, 5, 9, 2, 1, 6,
         6, 1, 2, 3, 8, 7, 4, 9, 5,
@@ -152,6 +152,13 @@ TEST_CASE("Board with value repeated in line / column is invalid")
 TEST_CASE("Board with value repeated in section is invalid")
 {
     REQUIRE(!invalid_board_section.isValid());
+    const auto invalidPos = invalid_board_section.getInvalidPositions();
+    REQUIRE(invalidPos.size() == 6);
+    // All the invalid repeated values should be either '2' or '3'.
+    for (size_t i = 0; i < invalidPos.size(); i++) {
+        int repVal = invalid_board_section.valueAt(invalidPos[i].first, invalidPos[i].second);
+        REQUIRE((repVal == 2 || repVal == 3));
+    }
 }
 
 TEST_CASE("Completed board is valid")

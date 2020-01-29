@@ -235,9 +235,21 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(bool stopAtFirst) con
         }
     }
 
-    // Eliminates duplicates - some invalid positions might have been included more than once
-    // when evaluated against different invalidation conditions.
-    const auto &uniquesEnd = unique(invalidPositions.begin(), invalidPositions.end());
+    // Eliminates duplicates - some invalid positions might have been included more
+    // than once when evaluated against different invalidation conditions.
+    sort(invalidPositions.begin(), invalidPositions.end(),
+         [](const pair<uint8_t, uint8_t> &p1, const pair<uint8_t, uint8_t> &p2)
+         {
+             return (p1.first*10 + p1.second < p2.first*10 + p2.second);
+         });
+
+    const auto &uniquesEnd =
+        unique(invalidPositions.begin(), invalidPositions.end(),
+               [](const pair<uint8_t,uint8_t> &p1, const pair<uint8_t,uint8_t> &p2) -> bool
+               {
+                   return (p1.first == p2.first && p1.second == p2.second);
+               });
+
     invalidPositions.resize(distance(invalidPositions.begin(), uniquesEnd));
 
     return invalidPositions;
