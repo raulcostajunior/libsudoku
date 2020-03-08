@@ -29,6 +29,10 @@ public:
 
     Board(const Board &board);
 
+    static const uint8_t NUM_LINES = 9;
+    static const uint8_t NUM_COLS = 9;
+    static const uint8_t NUM_POS = NUM_LINES * NUM_COLS;
+
     /**
          * Retrieves the value at a given (line, column) coordinate of the
          * board.
@@ -79,8 +83,10 @@ public:
         */
     bool isEmpty() const noexcept;
 
-    /*
+    /**
      * Returns the number of blank positions in the board.
+     * 
+     * @return number of blank positions in the board.
      */
     uint8_t blankPositionCount() const noexcept;
 
@@ -95,16 +101,15 @@ public:
     Board &operator=(const Board &board) noexcept;
 
 private:
-    std::uint8_t _values[9][9]{
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0}};
+    std::uint8_t _values[NUM_LINES][NUM_COLS]{{0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0},
+                                              {0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
     std::vector<std::pair<std::uint8_t, std::uint8_t>>
     findInvalidPositions(bool stopAtFirst) const noexcept;

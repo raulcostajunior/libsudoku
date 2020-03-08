@@ -12,21 +12,19 @@ using namespace sudoku;
 
 Board::Board(const vector<uint8_t> &values)
 {
-    size_t upperBound = min(static_cast<size_t>(81), values.size());
+    size_t upperBound = min(static_cast<size_t>(Board::NUM_POS), values.size());
     for (size_t i = 0; i < upperBound; i++)
     {
-        size_t lin = i / 9;
-        size_t col = i % 9;
+        size_t lin = i / Board::NUM_COLS;
+        size_t col = i % Board::NUM_LINES;
         _values[lin][col] = values[i];
     }
 }
 
 Board::Board(const Board &board)
 {
-    for (uint8_t lin = 0; lin < 9; lin++)
-    {
-        for (uint8_t col = 0; col < 9; col++)
-        {
+    for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             _values[lin][col] = board._values[lin][col];
         }
     }
@@ -34,8 +32,7 @@ Board::Board(const Board &board)
 
 uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept
 {
-    if (line < 9 && column < 9)
-    {
+    if (line < Board::NUM_LINES && column < Board::NUM_COLS) {
         return _values[line][column];
     }
 
@@ -46,10 +43,8 @@ uint8_t Board::blankPositionCount() const noexcept
 {
     uint8_t nBlanks = 0;
 
-    for (uint8_t lin = 0; lin < 9; lin++)
-    {
-        for (uint8_t col = 0; col < 9; col++)
-        {
+    for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             if (_values[lin][col] == 0)
             {
                 nBlanks++;
@@ -79,10 +74,8 @@ SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
 
 void Board::clear() noexcept
 {
-    for (uint8_t i = 0; i < 9; i++)
-    {
-        for (uint8_t j = 0; j < 9; j++)
-        {
+    for (uint8_t i = 0; i < Board::NUM_LINES; i++) {
+        for (uint8_t j = 0; j < NUM_COLS; j++) {
             _values[i][j] = 0;
         }
     }
@@ -107,10 +100,8 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(bool stopAtFirst) con
     vector<pair<uint8_t, uint8_t>> invalidPositions;
 
     // Checks if any value is out of the allowed range
-    for (uint8_t lin = 0; lin < 9; lin++)
-    {
-        for (uint8_t col = 0; col < 9; col++)
-        {
+    for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             if (_values[lin][col] > 9)
             {
                 invalidPositions.push_back(make_pair(lin, col));
@@ -121,15 +112,12 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(bool stopAtFirst) con
 
     // Checks if any value other than blank repeats across
     // any line.
-    for (uint8_t lin = 0; lin < 9; lin++)
-    {
-        for (uint8_t col = 0; col < 8; col++)
-        {
+    for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS - 1; col++) {
             uint8_t val = _values[lin][col];
             if (val != 0 && val <= 9)
             {
-                for (uint8_t pos = col + 1; pos < 9; pos++)
-                {
+                for (uint8_t pos = col + 1; pos < Board::NUM_COLS; pos++) {
                     if (val == _values[lin][pos])
                     {
                         // Found a repetition in the line.
@@ -146,15 +134,12 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(bool stopAtFirst) con
 
     // Checks if any value other than blank repeats across
     // any column.
-    for (uint8_t col = 0; col < 9; col++)
-    {
-        for (uint8_t lin = 0; lin < 8; lin++)
-        {
+    for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
+        for (uint8_t lin = 0; lin < Board::NUM_COLS - 1; lin++) {
             uint8_t val = _values[lin][col];
             if (val != 0 && val <= 9)
             {
-                for (uint8_t pos = lin + 1; pos < 9; pos++)
-                {
+                for (uint8_t pos = lin + 1; pos < Board::NUM_LINES; pos++) {
                     if (val == _values[pos][col])
                     {
                         // Found a repetition in the column.
@@ -256,10 +241,8 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(bool stopAtFirst) con
 bool Board::isEmpty() const noexcept
 {
     bool empty = true;
-    for (uint8_t i = 0; i < 81; i++)
-    {
-        if (_values[i / 9][i % 9] != 0)
-        {
+    for (uint8_t i = 0; i < Board::NUM_POS; i++) {
+        if (_values[i / Board::NUM_LINES][i % Board::NUM_COLS] != 0) {
             empty = false;
             break;
         }
@@ -271,10 +254,8 @@ bool Board::isComplete() const noexcept
 {
     bool anyBlank = false;
 
-    for (uint8_t i = 0; i < 81; i++)
-    {
-        if (_values[i / 9][i % 9] == 0)
-        {
+    for (uint8_t i = 0; i < Board::NUM_POS; i++) {
+        if (_values[i / Board::NUM_LINES][i % Board::NUM_COLS] == 0) {
             anyBlank = true;
             break;
         }
@@ -294,10 +275,8 @@ bool Board::isComplete() const noexcept
 
 bool Board::operator==(const Board &board) const noexcept
 {
-    for (uint8_t lin = 0; lin < 9; lin++)
-    {
-        for (uint8_t col = 0; col < 9; col++)
-        {
+    for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             if (_values[lin][col] != board._values[lin][col])
             {
                 return false;
@@ -309,10 +288,8 @@ bool Board::operator==(const Board &board) const noexcept
 
 Board &Board::operator=(const Board &board) noexcept
 {
-    for (uint8_t lin = 0; lin < 9; lin++)
-    {
-        for (uint8_t col = 0; col < 9; col++)
-        {
+    for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             _values[lin][col] = board._values[lin][col];
         }
     }
@@ -321,10 +298,8 @@ Board &Board::operator=(const Board &board) noexcept
 
 ostream &operator<<(ostream &os, const Board &board)
 {
-    for (uint8_t lin = 0; lin < 9; lin++)
-    {
-        for (uint8_t col = 0; col < 9; col++)
-        {
+    for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             os << static_cast<int>(board.valueAt(lin, col)) << " ";
         }
         os << endl;
