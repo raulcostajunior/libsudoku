@@ -1,12 +1,17 @@
 cmake_minimum_required (VERSION 3.5 FATAL_ERROR)
 
 project (libsudoku
-    LANGUAGES 
+    LANGUAGES
       CXX
 )
 
 set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_CXX_CLANG_TIDY
+     clang-tidy;
+     -header-filter=.;
+     -checks=-modernize-use-trailing-return-type,bugprone-*,cppcoreguidelines,google-*,-google-build-using-namespace,-google-runtime-references,boost-*,cert-*,performance-*,readbility-*;
+)
 
 find_package (Threads)
 
@@ -20,8 +25,8 @@ add_library (libsudoku_objs
       src/generator.cpp
 )
 
-set_target_properties (libsudoku_objs 
-    PROPERTIES 
+set_target_properties (libsudoku_objs
+    PROPERTIES
       POSITION_INDEPENDENT_CODE 1
 )
 
@@ -37,22 +42,22 @@ set_target_properties(libsudoku_static
       OUTPUT_NAME "sudoku"
 )
 
-add_executable(board_tests test/board_tests.cpp)
+add_executable(board_tests src/test/board_tests.cpp)
 target_include_directories(board_tests PRIVATE src)
 target_link_libraries(board_tests libsudoku_static)
 
-add_executable(solver_tests test/solver_tests.cpp)
+add_executable(solver_tests src/test/solver_tests.cpp)
 target_include_directories(solver_tests PRIVATE src)
 target_link_libraries(solver_tests libsudoku_static)
 
-add_executable(generator_tests test/generator_tests.cpp)
+add_executable(generator_tests src/test/generator_tests.cpp)
 target_include_directories(generator_tests PRIVATE src)
 target_link_libraries(generator_tests libsudoku_static)
 
 enable_testing()
 
 add_test(
-  NAME board_tests 
+  NAME board_tests
   COMMAND $<TARGET_FILE:board_tests> --success
 )
 

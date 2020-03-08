@@ -25,7 +25,7 @@ class Board
 public:
     Board() = default;
 
-    explicit Board(const std::vector<std::uint8_t> &values);
+    explicit Board(const std::vector<std::uint8_t> &values) noexcept;
 
     Board(const Board &board);
 
@@ -85,7 +85,7 @@ public:
 
     /**
      * Returns the number of blank positions in the board.
-     * 
+     *
      * @return number of blank positions in the board.
      */
     uint8_t blankPositionCount() const noexcept;
