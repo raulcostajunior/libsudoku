@@ -75,8 +75,6 @@ SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value)
     } else {
         return SetValueResult::ValueInvalidatesBoard;
     }
-
-    return SetValueResult::NoError;
 }
 
 void Board::clear() noexcept
@@ -250,7 +248,7 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(bool stopAtFirst) con
                    return (p1.first == p2.first && p1.second == p2.second);
                });
 
-    invalidPositions.resize(distance(invalidPositions.begin(), uniquesEnd));
+    invalidPositions.resize(static_cast<size_t>(distance(invalidPositions.begin(), uniquesEnd)));
 
     return invalidPositions;
 }
