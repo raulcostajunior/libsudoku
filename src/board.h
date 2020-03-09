@@ -25,7 +25,7 @@ class Board
 public:
     Board() = default;
 
-    explicit Board(const std::vector<std::uint8_t> &values) noexcept;
+    Board(const std::initializer_list<std::uint8_t> &values) noexcept;
 
     Board(const Board &board);
 

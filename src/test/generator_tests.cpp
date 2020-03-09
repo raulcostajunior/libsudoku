@@ -23,7 +23,7 @@ GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard, uin
     Generator gen;
 
     auto asyncGenFinished =
-         [&generatedBoard, &result, &finished] (GeneratorResult genResult, Board genBoard) 
+         [&generatedBoard, &result, &finished] (GeneratorResult genResult, const Board &genBoard)
          {
              result = genResult;
              generatedBoard = genBoard;
@@ -32,12 +32,12 @@ GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard, uin
 
     auto asyncGenProgress =
          [](uint8_t currentStep, uint8_t totalSteps) {
-             clog << "Performing generating step '" << (int)currentStep << "' of '"
-             << (int)totalSteps << "'..." << endl;
+             clog << "Performing generating step '" << static_cast<int>(currentStep) << "' of '"
+             << static_cast<int>(totalSteps) << "'..." << endl;
          };
 
     auto startTime = chrono::system_clock::now();
-    clog << "Generating board with difficulty level '" << (int)difficulty << "' ..."
+    clog << "Generating board with difficulty level '" << static_cast<int>(difficulty) << "' ..."
          << endl;
 
     result = gen.asyncGenerate(difficulty, asyncGenProgress, asyncGenFinished);
@@ -52,21 +52,21 @@ GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard, uin
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
     }
-    
-    if (numOfWaits < timeoutSecs) 
+
+    if (numOfWaits < timeoutSecs)
     {
         auto stopTime = chrono::system_clock::now();
 
-        clog << "... generated in " 
+        clog << "... generated in "
              << chrono::duration_cast<chrono::milliseconds>(stopTime - startTime).count() << " milliseconds:"
              << endl << generatedBoard << endl;
     }
-    else 
+    else
     {
         // Timed-out: cancel
         gen.cancelAsyncGenerate();
     }
-                                                                                                                                                                                   
+
     return result;
 }
 
@@ -126,7 +126,7 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle")
     auto resultSolve = solver.solve(genBoard, solvedBoard);
     REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
-    
+
 }
 
 TEST_CASE("Cannot spawn more than one asyncGenerate simultaneously")

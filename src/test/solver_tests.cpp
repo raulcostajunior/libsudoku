@@ -135,7 +135,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions)
          };
 
     auto asyncSolveFinished =
-         [&solutions, &result, &finished] (SolverResult solverResult, vector<Board> solvedBoards)
+         [&solutions, &result, &finished] (SolverResult solverResult, const vector<Board> &solvedBoards)
          {
              solutions = solvedBoards;
              result = solverResult;

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <initializer_list>
 #include <iostream>
 #include <tuple>
 #include <utility>
@@ -10,12 +11,14 @@
 using namespace std;
 using namespace sudoku;
 
-Board::Board(const vector<uint8_t> &values) noexcept {
+Board::Board(const initializer_list<uint8_t> &values) noexcept {
     size_t upperBound = min(static_cast<size_t>(Board::NUM_POS), values.size());
+    auto valIt = values.begin();
     for (size_t i = 0; i < upperBound; i++) {
         size_t lin = i / Board::NUM_COLS;
         size_t col = i % Board::NUM_LINES;
-        _values[lin][col] = values[i];
+        _values[lin][col] = *valIt;
+        valIt++;
     }
 }
 
