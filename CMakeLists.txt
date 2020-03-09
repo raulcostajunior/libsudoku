@@ -7,6 +7,7 @@ project (libsudoku
 
 set (CMAKE_CXX_STANDARD 11)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_CLANG_TIDY
      clang-tidy;
      -header-filter=.;
