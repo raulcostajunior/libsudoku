@@ -71,11 +71,10 @@ public:
      */
     static uint8_t minEmptyPositions(PuzzleDifficulty difficulty) noexcept;
 
-private:
-
+   private:
     void generate(PuzzleDifficulty difficulty,
-                  GeneratorProgressCallback fnProgress,
-                  GeneratorFinishedCallback fnFinished);
+                  const GeneratorProgressCallback &fnProgress,
+                  const GeneratorFinishedCallback &fnFinished);
 
     bool processGenCancelled(const GeneratorFinishedCallback &fnFinished);
 
@@ -83,7 +82,6 @@ private:
     std::atomic<bool> _asyncGenActive;
 
     std::thread _genWorker;
-
 };
 
 } // namespace sudoku

@@ -122,8 +122,8 @@ SolverResult Solver::solve(const Board &board,
 }
 
 void Solver::solveForGood(const Board &board,
-                          SolverProgressCallback fnProgress,
-                          SolverFinishedCallback fnFinished) {
+                          const SolverProgressCallback &fnProgress,
+                          const SolverFinishedCallback &fnFinished) {
     vector<Board> solvedBoards;
 
     auto solvable = checkBoard(board);

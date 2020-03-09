@@ -260,6 +260,10 @@ bool Board::operator==(const Board &board) const noexcept {
 }
 
 Board &Board::operator=(const Board &board) noexcept {
+    if (this == &board) {
+        // There's nothing to do
+        return *this;
+    }
     for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
         for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             _values[lin][col] = board._values[lin][col];

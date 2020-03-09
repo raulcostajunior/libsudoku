@@ -119,8 +119,8 @@ private:
     // Internal method that does the real work for finding all the solutions
     // to a given board.
     void solveForGood(const Board &board,
-                      SolverProgressCallback fnProgress,
-                      SolverFinishedCallback fnFinished);
+                      const SolverProgressCallback &fnProgress,
+                      const SolverFinishedCallback &fnFinished);
 
     std::atomic<bool> _asyncSolvingCancelled;
     std::atomic<bool> _asyncSolvingActive;
