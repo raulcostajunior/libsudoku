@@ -11,18 +11,18 @@
 using namespace std;
 using namespace sudoku;
 
-Board::Board(const initializer_list<uint8_t> &values) noexcept {
+Board::Board(const vector<uint8_t> &values) noexcept
+{
     size_t upperBound = min(static_cast<size_t>(Board::NUM_POS), values.size());
-    auto valIt = values.begin();
     for (size_t i = 0; i < upperBound; i++) {
         size_t lin = i / Board::NUM_COLS;
         size_t col = i % Board::NUM_LINES;
-        _values[lin][col] = *valIt;
-        valIt++;
+        _values[lin][col] = values[i];
     }
 }
 
-Board::Board(const Board &board) {
+Board::Board(const Board &board)
+{
     for (uint8_t lin = 0; lin < Board::NUM_LINES; lin++) {
         for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             _values[lin][col] = board._values[lin][col];
