@@ -48,3 +48,6 @@ build_release/
 
 # VSCode specific settings
 .vscode
+
+# clangd specific
+.clangd/
