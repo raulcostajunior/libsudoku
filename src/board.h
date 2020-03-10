@@ -29,9 +29,11 @@ public:
 
     Board(const Board &board);
 
-    static const uint8_t NUM_LINES = 9;
+    static const uint8_t NUM_ROWS = 9;
     static const uint8_t NUM_COLS = 9;
-    static const uint8_t NUM_POS = NUM_LINES * NUM_COLS;
+    static const uint8_t NUM_POS = NUM_ROWS * NUM_COLS;
+    static const uint8_t MIN_VAL = 1;
+    static const uint8_t MAX_VAL = 9;
 
     /**
          * Retrieves the value at a given (line, column) coordinate of the
@@ -101,7 +103,7 @@ public:
     Board &operator=(const Board &board) noexcept;
 
 private:
-    std::uint8_t _values[NUM_LINES][NUM_COLS]{{0, 0, 0, 0, 0, 0, 0, 0, 0},
+    std::uint8_t _values[NUM_ROWS][NUM_COLS]{{0, 0, 0, 0, 0, 0, 0, 0, 0},
                                               {0, 0, 0, 0, 0, 0, 0, 0, 0},
                                               {0, 0, 0, 0, 0, 0, 0, 0, 0},
                                               {0, 0, 0, 0, 0, 0, 0, 0, 0},
