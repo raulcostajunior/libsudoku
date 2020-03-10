@@ -87,9 +87,6 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
     auto resultSolve = solver.solve(genBoard, solvedBoard);
     REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
-
-    // TODO assert that board has either a single solution or that the number of
-    //      blanks is equal to the maximum.
 }
 
 TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
@@ -110,9 +107,6 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
     auto resultSolve = solver.solve(genBoard, solvedBoard);
     REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
-
-    // TODO assert that board has either a single solution or that the number of
-    //      blanks is equal to the maximum.
 }
 
 TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
@@ -131,9 +125,6 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
     auto resultSolve = solver.solve(genBoard, solvedBoard);
     REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
-
-    // TODO assert that board has either a single solution or that the number of
-    //      blanks is equal to the maximum.
 }
 
 TEST_CASE("Cannot spawn more than one asyncGenerate simultaneously") {

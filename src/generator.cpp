@@ -51,7 +51,7 @@ vector<uint8_t> genCandidatesVector(mt19937 &randEngine) {
  * @param boards the collection of boards in which the most repeated varying
  * value and position should be searched.
  *
- * @returns a pair with first being the value and the second being the position.
+ * @returns a pair where first is the value and second is the position.
  * The position is an index for the board position and is in the interval
  * [0 .. Board::NUM_POS].
  */
@@ -61,9 +61,9 @@ pair<uint8_t, uint8_t> getMostFreqVariation(const vector<Board> &boards) {
     using valuesFreqs = map<uint8_t, uint8_t>;
     vector<valuesFreqs> valuesDistrib(Board::NUM_POS, valuesFreqs());
     for (size_t nBoard = 0; nBoard < boards.size(); nBoard++) {
-        for (size_t row = 0; row < Board::NUM_ROWS; row++) {
-            for (size_t col = 0; col < Board::NUM_COLS; col++) {
-                const uint8_t pos = row * Board::NUM_COLS + col;
+        for (uint8_t row = 0; row < Board::NUM_ROWS; row++) {
+            for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
+                const uint8_t pos = static_cast<uint8_t>(row * Board::NUM_COLS + col);
                 valuesDistrib[pos][boards[nBoard].valueAt(row, col)] += 1;
             }
         }
@@ -85,7 +85,7 @@ pair<uint8_t, uint8_t> getMostFreqVariation(const vector<Board> &boards) {
                 // Found a new most frequent varying value
                 maxFreq = it->second;
                 mfvValue = it->first;
-                mfvPosition = pos;
+                mfvPosition = static_cast<uint8_t>(pos);
             }
         }
     }
@@ -233,16 +233,14 @@ void Generator::generate(PuzzleDifficulty difficulty,
     atomic<bool> solvingCancelled(false);
     solver.asyncSolveForGood(
         genBoard,
-        [&solver, &fnFinished, &solvingCancelled, this](double progPercent,
-                                                        unsigned numSolutions) {
+        [&solver, &fnFinished, &solvingCancelled, this](double, unsigned) {
             if (processGenCancelled(fnFinished)) {
                 // Generation has been cancelled - cancel the async solving.
                 solver.cancelAsyncSolving();
                 solvingCancelled = true;
             }
         },
-        [&boardSolutions, &solvingFinished](SolverResult result,
-                                            vector<Board> solutions) {
+        [&boardSolutions, &solvingFinished](SolverResult, vector<Board> solutions) {
             // Async solving finished - as we departed from a valid and solvable
             // board there's no need to test for SolverResult value.
             solvingFinished = true;
