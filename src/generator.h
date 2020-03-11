@@ -7,20 +7,13 @@
 #include <thread>
 #include <utility>
 
-namespace sudoku
-{
+namespace sudoku {
 
 class Board;
 
-enum class PuzzleDifficulty : uint8_t
-{
-    Easy,
-    Medium,
-    Hard
-};
+enum class PuzzleDifficulty : uint8_t { Easy, Medium, Hard };
 
-enum class GeneratorResult: uint8_t
-{
+enum class GeneratorResult : uint8_t {
     NoError,
     AsyncGenCancelled,
     AsyncGenSubmitted,
@@ -35,11 +28,8 @@ using GeneratorFinishedCallback =
 using GeneratorProgressCallback =
     std::function<void(uint8_t /* currentStep */, uint8_t /* totalSteps */)>;
 
-class Generator
-{
-
-public:
-
+class Generator {
+   public:
     Generator();
 
     ~Generator();
@@ -59,7 +49,6 @@ public:
      *         difficulty level.
      */
     static uint8_t maxEmptyPositions(PuzzleDifficulty difficulty) noexcept;
-
 
     /**
      * The minimum number of empty positions in a board generated for a
@@ -84,6 +73,6 @@ public:
     std::thread _genWorker;
 };
 
-} // namespace sudoku
+}  // namespace sudoku
 
 #endif

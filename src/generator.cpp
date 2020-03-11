@@ -63,7 +63,8 @@ pair<uint8_t, uint8_t> getMostFreqVariation(const vector<Board> &boards) {
     for (size_t nBoard = 0; nBoard < boards.size(); nBoard++) {
         for (uint8_t row = 0; row < Board::NUM_ROWS; row++) {
             for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
-                const uint8_t pos = static_cast<uint8_t>(row * Board::NUM_COLS + col);
+                const uint8_t pos =
+                    static_cast<uint8_t>(row * Board::NUM_COLS + col);
                 valuesDistrib[pos][boards[nBoard].valueAt(row, col)] += 1;
             }
         }
@@ -240,7 +241,8 @@ void Generator::generate(PuzzleDifficulty difficulty,
                 solvingCancelled = true;
             }
         },
-        [&boardSolutions, &solvingFinished](SolverResult, vector<Board> solutions) {
+        [&boardSolutions, &solvingFinished](SolverResult,
+                                            vector<Board> solutions) {
             // Async solving finished - as we departed from a valid and solvable
             // board there's no need to test for SolverResult value.
             solvingFinished = true;
