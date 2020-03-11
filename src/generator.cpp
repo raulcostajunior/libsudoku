@@ -109,7 +109,7 @@ uint8_t Generator::maxEmptyPositions(PuzzleDifficulty difficulty) noexcept {
 
     switch (difficulty) {
         case PuzzleDifficulty::Hard:
-            max = 52;
+            max = 59;
             break;
         case PuzzleDifficulty::Medium:
             max = 39;
@@ -125,13 +125,13 @@ uint8_t Generator::minEmptyPositions(PuzzleDifficulty difficulty) noexcept {
 
     switch (difficulty) {
         case PuzzleDifficulty::Hard:
-            min = 40;
+            min = 39;
             break;
         case PuzzleDifficulty::Medium:
-            min = 30;
+            min = 29;
             break;
         default:  // EASY
-            min = 20;
+            min = 19;
     }
     return min;
 }
