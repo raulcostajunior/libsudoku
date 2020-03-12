@@ -87,6 +87,27 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
     auto resultSolve = solver.solve(genBoard, solvedBoard);
     REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
+
+    vector<Board> genBoardSolutions;
+    SolverResult resultSolveAll;
+    resultSolveAll = solver.asyncSolveForGood(
+        genBoard, nullptr,
+        [&resultSolveAll, &genBoardSolutions](SolverResult result,
+                                              const vector<Board> &solutions) {
+            resultSolveAll = result;
+            genBoardSolutions = solutions;
+        });
+    while (resultSolveAll != SolverResult::NoError &&
+           resultSolveAll != SolverResult::AsyncSolvingCancelled) {
+        this_thread::sleep_for(chrono::milliseconds(1000));
+    }
+    clog << "Number of solutions for generated board: "
+         << genBoardSolutions.size() << endl;
+    for (size_t i = 0; i < genBoardSolutions.size(); i++) {
+        clog << "Board #" << i << ":\n" << genBoardSolutions[i] << endl;
+    }
+    REQUIRE((genBoardSolutions.size() == 1 ||
+             nBlanks == Generator::minEmptyPositions(PuzzleDifficulty::Easy)));
 }
 
 TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
@@ -107,6 +128,28 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
     auto resultSolve = solver.solve(genBoard, solvedBoard);
     REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
+
+    vector<Board> genBoardSolutions;
+    SolverResult resultSolveAll;
+    resultSolveAll = solver.asyncSolveForGood(
+        genBoard, nullptr,
+        [&resultSolveAll, &genBoardSolutions](SolverResult result,
+                                              const vector<Board> &solutions) {
+            resultSolveAll = result;
+            genBoardSolutions = solutions;
+        });
+    while (resultSolveAll != SolverResult::NoError &&
+           resultSolveAll != SolverResult::AsyncSolvingCancelled) {
+        this_thread::sleep_for(chrono::milliseconds(1000));
+    }
+    clog << "Number of solutions for generated board: "
+         << genBoardSolutions.size() << endl;
+    for (size_t i = 0; i < genBoardSolutions.size(); i++) {
+        clog << "Board #" << i << ":\n" << genBoardSolutions[i] << endl;
+    }
+    REQUIRE(
+        (genBoardSolutions.size() == 1 ||
+         nBlanks == Generator::minEmptyPositions(PuzzleDifficulty::Medium)));
 }
 
 TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
@@ -125,6 +168,27 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
     auto resultSolve = solver.solve(genBoard, solvedBoard);
     REQUIRE(resultSolve == SolverResult::NoError);
     REQUIRE(solvedBoard.isComplete());
+
+    vector<Board> genBoardSolutions;
+    SolverResult resultSolveAll;
+    resultSolveAll = solver.asyncSolveForGood(
+        genBoard, nullptr,
+        [&resultSolveAll, &genBoardSolutions](SolverResult result,
+                                              const vector<Board> &solutions) {
+            resultSolveAll = result;
+            genBoardSolutions = solutions;
+        });
+    while (resultSolveAll != SolverResult::NoError &&
+           resultSolveAll != SolverResult::AsyncSolvingCancelled) {
+        this_thread::sleep_for(chrono::milliseconds(1000));
+    }
+    clog << "Number of solutions for generated board: "
+         << genBoardSolutions.size() << endl;
+    for (size_t i = 0; i < genBoardSolutions.size(); i++) {
+        clog << "Board #" << i << ":\n" << genBoardSolutions[i] << endl;
+    }
+    REQUIRE((genBoardSolutions.size() == 1 ||
+             nBlanks == Generator::minEmptyPositions(PuzzleDifficulty::Hard)));
 }
 
 TEST_CASE("Cannot spawn more than one asyncGenerate simultaneously") {

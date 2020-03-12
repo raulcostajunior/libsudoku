@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <functional>
+#include <limits>
 #include <map>
 #include <random>
 #include <thread>
@@ -44,18 +45,18 @@ vector<uint8_t> genCandidatesVector(mt19937 &randEngine) {
 }
 
 /**
- * Returns the value and position that repeats the most in a given
- * collection of boards. The value and position are selected among the values
- * and positions that don't repeat for all the boards.
+ * Returns the less frequent value in a position where the difference between
+ * the total frequency for the different values for the position and the minimal
+ * frequency across a given set of boards is maximized.
  *
- * @param boards the collection of boards in which the most repeated varying
- * value and position should be searched.
+ * @param boards the collection of boards where the less frequent value and its
+ * position are to be found.
  *
- * @returns a pair where first is the value and second is the position.
- * The position is an index for the board position and is in the interval
- * [0 .. Board::NUM_POS].
+ * @returns a pair where first is the value and second is the position being
+ * searched across the collection of boards. The position is an index for the
+ * board position and is in the interval [0 .. Board::NUM_POS].
  */
-pair<uint8_t, uint8_t> getMostFreqVariation(const vector<Board> &boards) {
+pair<uint8_t, uint8_t> getLessFreqVariation(const vector<Board> &boards) {
     // Accumulates the frequencies of all the values in all the positions of all
     // the boards in the collection.
     using valuesFreqs = map<uint8_t, uint8_t>;
@@ -69,28 +70,38 @@ pair<uint8_t, uint8_t> getMostFreqVariation(const vector<Board> &boards) {
             }
         }
     }
-    // Sweeps all the frequencies looking for the most frequent value in a given
-    // position that is not the unique value for all the boards in that
-    // position.
-    uint8_t mfvPosition;
-    uint8_t mfvValue;
-    int maxFreq = 0;
+    // Sweeps all the frequencies looking for the less frequent value in a
+    // position that has the biggest distance between the less frequent value
+    // frequency and the accumulated frequencies for that position.
+    uint8_t lfvPosition;
+    uint8_t lfvValue;
+    int maxDist = 0;
     for (size_t pos = 0; pos < Board::NUM_POS; pos++) {
         if (valuesDistrib[pos].size() < 2) {
             // Skips positions for with only one value.
             continue;
         }
+        int minFreq = INT_MAX;
+        uint8_t minFreqValue = 0;
+        int totalFreq = 0;
         for (auto it = valuesDistrib[pos].cbegin();
              it != valuesDistrib[pos].cend(); it++) {
-            if (it->second > maxFreq) {
-                // Found a new most frequent varying value
-                maxFreq = it->second;
-                mfvValue = it->first;
-                mfvPosition = static_cast<uint8_t>(pos);
+            totalFreq += it->second;
+            if (it->second < minFreq) {
+                minFreq = it->second;
+                minFreqValue = it->first;
             }
         }
+        if (totalFreq - minFreq > maxDist) {
+            // Found a new maximum for the difference between the accumulated
+            // frequency for a position and the smaller value frequency for that
+            // position.
+            maxDist = totalFreq - minFreq;
+            lfvValue = minFreqValue;
+            lfvPosition = static_cast<uint8_t>(pos);
+        }
     }
-    return make_pair(mfvValue, mfvPosition);
+    return make_pair(lfvValue, lfvPosition);
 }
 
 Generator::Generator() : _asyncGenCancelled(false), _asyncGenActive(false) {}
@@ -109,7 +120,7 @@ uint8_t Generator::maxEmptyPositions(PuzzleDifficulty difficulty) noexcept {
 
     switch (difficulty) {
         case PuzzleDifficulty::Hard:
-            max = 59;
+            max = 50;
             break;
         case PuzzleDifficulty::Medium:
             max = 39;
@@ -267,23 +278,42 @@ void Generator::generate(PuzzleDifficulty difficulty,
     while (boardSolutions.size() > 1 &&
            genBoard.blankPositionCount() >
                Generator::minEmptyPositions(difficulty)) {
-        const pair<uint8_t, uint8_t> mostFreqVarying =
-            getMostFreqVariation(boardSolutions);
-        // Sets the generated board position and values to the most frequent
-        // value that varies and removes all boards with that value in that
-        // position from the collection of solution boards.
-        genBoard.setValueAt(mostFreqVarying.second / Board::NUM_COLS,
-                            mostFreqVarying.second % Board::NUM_COLS,
-                            mostFreqVarying.first);
-        const auto newEnd = remove_if(
-            boardSolutions.begin(), boardSolutions.end(),
-            [&mostFreqVarying](const Board &board) {
-                return board.valueAt(
-                           mostFreqVarying.second / Board::NUM_COLS,
-                           mostFreqVarying.second % Board::NUM_COLS) ==
-                       mostFreqVarying.first;
-            });
-        boardSolutions.erase(newEnd, boardSolutions.end());
+        clog << "@Generator::generate:\n\tboardSolutions has '"
+             << boardSolutions.size() << "' solutions.\n\t genBoard has '"
+             << (size_t)genBoard.blankPositionCount()
+             << "' empty positions.\n\tgenBoard:\n"
+             << genBoard << endl;
+
+        const pair<uint8_t, uint8_t> lessFreqVariation =
+            getLessFreqVariation(boardSolutions);
+        const uint8_t lfvRow = lessFreqVariation.second / Board::NUM_COLS;
+        const uint8_t lfvCol = lessFreqVariation.second % Board::NUM_COLS;
+        genBoard.setValueAt(lfvRow, lfvCol, lessFreqVariation.first);
+        vector<Board> reducSolutions;
+        for (size_t i = 0; i < boardSolutions.size(); i++) {
+            if (boardSolutions[i].valueAt(lfvRow, lfvCol) ==
+                lessFreqVariation.first) {
+                clog << "Board solution #" << i << " has value "
+                     << (int)lessFreqVariation.first << " at (" << (int)lfvRow
+                     << ", " << (int)lfvCol << "); will be kept." << endl;
+                reducSolutions.emplace_back(boardSolutions[i]);
+            } else {
+                clog << "Board solution #" << i << " has value "
+                     << (int)boardSolutions[i].valueAt(lfvRow, lfvCol)
+                     << " at (" << (int)lfvRow << ", " << (int)lfvCol
+                     << "); will be removed." << endl;
+            }
+        }
+        std::swap(boardSolutions, reducSolutions);
+        // const auto newEnd = remove_if(
+        //     boardSolutions.begin(), boardSolutions.end(),
+        //     [&lessFreqVariation](const Board &board) {
+        //         return board.valueAt(
+        //                    lessFreqVariation.second / Board::NUM_COLS,
+        //                    lessFreqVariation.second % Board::NUM_COLS) !=
+        //                lessFreqVariation.first;
+        //     });
+        // boardSolutions.erase(newEnd, boardSolutions.end());
         if (processGenCancelled(fnFinished)) {
             return;
         }
