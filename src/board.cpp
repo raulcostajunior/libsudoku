@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <iostream>
+#include <set>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -66,6 +67,29 @@ SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value) {
     }
 }
 
+set<uint8_t> Board::getPossibleValues(uint8_t line, uint8_t column) const
+    noexcept {
+    set<uint8_t> pvs;
+    if (_values[line][column] == 0) {
+        // Position is empty - can go ahead and search for possible values.
+        pvs.insert({1, 2, 3, 4, 5, 6, 7, 8, 9});
+        for (size_t i = 0; i < Board::NUM_COLS; i++) {
+            pvs.erase(_values[line][i]);
+        }
+        for (size_t j = 0; j < Board::NUM_ROWS; j++) {
+            pvs.erase(_values[j][column]);
+        }
+        const size_t initLine = line / 3 * 3;
+        const size_t initColumn = column / 3 * 3;
+        for (size_t i = initLine; i < initLine + 3; i++) {
+            for (size_t j = initColumn; j < initColumn + 3; j++) {
+                pvs.erase(_values[i][j]);
+            }
+        }
+    }
+    return pvs;
+}
+
 void Board::clear() noexcept {
     for (uint8_t i = 0; i < Board::NUM_ROWS; i++) {
         for (uint8_t j = 0; j < NUM_COLS; j++) {
@@ -111,8 +135,8 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                         // Found a repetition in the line.
                         invalidPositions.push_back(make_pair(lin, col));
                         if (stopAtFirst) return invalidPositions;
-                        // Also adds the position of the repeated item to the
-                        // invalid list.
+                        // Also adds the position of the repeated item to
+                        // the invalid list.
                         invalidPositions.push_back(make_pair(lin, pos));
                     }
                 }
@@ -167,8 +191,8 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
             for (uint8_t col = initialCol; col < initialCol + 3; col++) {
                 uint8_t val = _values[lin][col];
                 if (val != 0 && val <= 9) {
-                    // Value is not blank; check if it has already happened in
-                    // section.
+                    // Value is not blank; check if it has already happened
+                    // in section.
                     bool isFirstOccurrence = true;
                     for (size_t i = 0; i < secVals.size(); i++) {
                         if (get<0>(secVals[i]) == val) {
@@ -180,26 +204,28 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                         }
                     }
                     if (isFirstOccurrence) {
-                        // Registers the first occurrence of the value in the
-                        // section.
+                        // Registers the first occurrence of the value in
+                        // the section.
                         secVals.push_back(make_tuple(val, lin, col, false));
                     }
                 }
             }
         }
-        // Registers the first occurrences of repeated values in the section.
+        // Registers the first occurrences of repeated values in the
+        // section.
         for (const auto &secVal : secVals) {
             if (get<3>(secVal)) {
                 invalidPositions.push_back(
                     make_pair(get<1>(secVal), get<2>(secVal)));
-                // No need to test for stopAtFirst - if it was true, this point
-                // would have not been reached.
+                // No need to test for stopAtFirst - if it was true, this
+                // point would have not been reached.
             }
         }
     }
 
-    // Eliminates duplicates - some invalid positions might have been included
-    // more than once when evaluated against different invalidation conditions.
+    // Eliminates duplicates - some invalid positions might have been
+    // included more than once when evaluated against different invalidation
+    // conditions.
     sort(
         invalidPositions.begin(), invalidPositions.end(),
         [](const pair<uint8_t, uint8_t> &p1, const pair<uint8_t, uint8_t> &p2) {

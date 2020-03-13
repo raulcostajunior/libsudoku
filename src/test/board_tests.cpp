@@ -198,3 +198,34 @@ TEST_CASE("Proper set value is accepted") {
     REQUIRE((result == SetValueResult::NoError));
     REQUIRE(board.valueAt(0, 4) == 4);
 }
+
+TEST_CASE(
+    "Possible values for an empty position don't make the board invalid") {
+    Board board(board_with_blanks);
+    REQUIRE(board.isValid());
+    const auto possibleValues = board.getPossibleValues(0, 4);
+    REQUIRE(possibleValues.size() == 1);
+    REQUIRE(possibleValues.count(4) == 1);
+    board.setValueAt(0, 4, 4);
+    REQUIRE(board.isValid());
+}
+
+TEST_CASE("No possible value is returned for a non empty position") {
+    Board board(solved_board);
+    const auto possibleValues = board.getPossibleValues(0, 0);
+    REQUIRE(possibleValues.empty());
+}
+
+TEST_CASE(
+    "Possible values doesn't include any value in same line, column or "
+    "section") {
+    Board board;  // Board is the clear board
+    board.setValueAt(0, 0, 1);
+    board.setValueAt(1, 1, 6);
+    board.setValueAt(8, 1, 4);
+    const auto possibleValues = board.getPossibleValues(0, 1);
+    REQUIRE(possibleValues.size() == 6);
+    REQUIRE(possibleValues.count(1) == 0);
+    REQUIRE(possibleValues.count(6) == 0);
+    REQUIRE(possibleValues.count(4) == 0);
+}

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -44,7 +45,7 @@ class Board {
     std::uint8_t valueAt(std::uint8_t line, std::uint8_t column) const noexcept;
 
     /**
-     * Sets the value at a given (line, column) coordinate of the board.
+     * @brief Sets the value at a given (line, column) coordinate of the board.
      *
      * @param line the line number (from 0 to 8).
      * @param column the column number (from 0 to 8).
@@ -57,12 +58,27 @@ class Board {
                               std::uint8_t value);
 
     /**
-     * Clears the board by assigning the value 0 to all its positions.
+     * @brief Obtain the values that could be placed in a given board position
+     * without invalidating the board.
+     *
+     * @param line the line coordinate of the position to be evaluated.
+     * @param column the column coordinate of the position to be evaluated.
+     * @return the set of possible values for the board position - if the given
+     * position is not empty, an empty set is returned.
+     */
+    std::set<std::uint8_t> getPossibleValues(std::uint8_t line,
+                                             std::uint8_t column) const
+        noexcept;
+
+    /**
+     * @brief Clears the board by assigning the value 0 to all its positions.
      */
     void clear() noexcept;
 
     /**
-     *  Returns true if none of the values in the board violates the Sudoku
+     * @brief Checks if the board is currently valid.
+     *
+     * @return true if none of the values in the board violates the Sudoku
      * non-repetition rules  across a line, a column or a 3x3 section and if all
      * the values are in the appropriate range (between 0 and 9  - 0 being the
      * value for empty positions).
@@ -70,9 +86,9 @@ class Board {
     bool isValid() const noexcept;
 
     /**
-     * Returns the board positions that contains invalid values - either for
-     * being out of the allowed ranges or for violating the non repetition rules
-     * of Sudoku.
+     * @brief Returns the board positions that contains invalid values - either
+     * for being out of the allowed ranges or for violating the non repetition
+     * rules of Sudoku.
      *
      * @return a vector of pairs with the coordinates of the invalid positions -
      * line as first and column as second.
