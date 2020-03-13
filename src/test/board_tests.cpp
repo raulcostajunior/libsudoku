@@ -219,7 +219,7 @@ TEST_CASE("No possible value is returned for a non empty position") {
 TEST_CASE(
     "Possible values doesn't include any value in same line, column or "
     "section") {
-    Board board;  // Board is the clear board
+    Board board;  // Default board is the empty board.
     board.setValueAt(0, 0, 1);
     board.setValueAt(1, 1, 6);
     board.setValueAt(8, 1, 4);
