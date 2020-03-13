@@ -216,9 +216,7 @@ TEST_CASE("No possible value is returned for a non empty position") {
     REQUIRE(possibleValues.empty());
 }
 
-TEST_CASE(
-    "Possible values doesn't include any value in same line, column or "
-    "section") {
+TEST_CASE("Possible values exclude any value in same line, column or section") {
     Board board;  // Default board is the empty board.
     board.setValueAt(0, 0, 1);
     board.setValueAt(1, 1, 6);
