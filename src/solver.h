@@ -17,7 +17,9 @@ enum class SolverResult : uint8_t {
     EmptyBoard,
     AlreadySolved,
     HasNoSolution,
-    InvalidatesCandidatesVector,
+    InvalidatesCandidatesVector,  // TODO: remove this value when the solver
+                                  // overload that accepts the candidates vector
+                                  // is removed.
     AsyncSolvingCancelled,
     AsyncSolvingSubmitted,
     AsyncSolvingBusy
@@ -72,7 +74,7 @@ class Solver {
                        Board &solvedBoard);
 
     /**
-     * Assynchronously finds all the solutions for a Sudoku puzzle in a given
+     * Assynchronously finds the solutions for a Sudoku puzzle in a given
      * board, if the board is solvable.
      *
      * @param board the board with the puzzle to be solved.
@@ -83,6 +85,8 @@ class Solver {
      * @param fnFinished the callback for reporing result of the solving
      * process.
      *
+     * @param maxSolutions the maximum number of solutions to find.
+     *
      * @return SolverResult::ASYNC_SOLVING_SUBMITTED if the asynchronous request
      * for finding all solutions has been accepted or
      * SolverResult::ASYNC_SOLVING_BUSY if there's already an active solving
@@ -90,7 +94,8 @@ class Solver {
      */
     SolverResult asyncSolveForGood(const Board &board,
                                    const SolverProgressCallback &fnProgress,
-                                   const SolverFinishedCallback &fnFinished);
+                                   const SolverFinishedCallback &fnFinished,
+                                   int maxSolutions = 50);
 
     /**
      * Cancels an async solving processing if there's one going on.
@@ -115,11 +120,12 @@ class Solver {
      */
     SolverResult checkBoard(const Board &board);
 
-    // Internal method that does the real work for finding all the solutions
+    // Internal method that does the real work for finding the solutions
     // to a given board.
-    void solveForGood(const Board &board,
-                      const SolverProgressCallback &fnProgress,
-                      const SolverFinishedCallback &fnFinished);
+    void searchSolutions(const Board &board,
+                         const SolverProgressCallback &fnProgress,
+                         const SolverFinishedCallback &fnFinished,
+                         int maxSolutions);
 
     std::atomic<bool> _asyncSolvingCancelled;
     std::atomic<bool> _asyncSolvingActive;

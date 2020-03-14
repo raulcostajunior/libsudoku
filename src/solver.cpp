@@ -22,9 +22,10 @@ Solver::~Solver() {
     }
 }
 
-SolverResult Solver::asyncSolveForGood(
-    const Board &board, const SolverProgressCallback &fnProgress,
-    const SolverFinishedCallback &fnFinished) {
+SolverResult Solver::asyncSolveForGood(const Board &board,
+                                       const SolverProgressCallback &fnProgress,
+                                       const SolverFinishedCallback &fnFinished,
+                                       int maxSolutions) {
     if (_asyncSolvingActive) {
         // Only one solving process can be active at once.
         return SolverResult::AsyncSolvingBusy;
@@ -33,17 +34,78 @@ SolverResult Solver::asyncSolveForGood(
     _asyncSolvingActive = true;
     _asyncSolvingCancelled = false;
 
-    _solveForGoodWorker =
-        std::thread(&Solver::solveForGood, this, board, fnProgress, fnFinished);
+    _solveForGoodWorker = std::thread(&Solver::searchSolutions, this, board,
+                                      fnProgress, fnFinished, maxSolutions);
 
     return SolverResult::AsyncSolvingSubmitted;
 }
 
 SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
-    return solve(board, vector<uint8_t>{1, 2, 3, 4, 5, 6, 7, 8, 9},
-                 solvedBoard);
+    // const vector<uint8_t> candidates({1, 2, 3, 4, 5, 6, 7, 8, 9});
+
+    auto solvable = checkBoard(board);
+    if (solvable != SolverResult::NoError) {
+        // Board is not solvable.
+        return solvable;
+    }
+
+    // Gather empty cells.
+    vector<pair<uint8_t, uint8_t>> emptyCells;
+
+    for (uint8_t lin = 0; lin < 9; lin++) {
+        for (uint8_t col = 0; col < 9; col++) {
+            if (board.valueAt(lin, col) == 0) {
+                emptyCells.push_back(make_pair(lin, col));
+            }
+        }
+    }
+
+    solvedBoard = board;  // board is the starting point for solvedBoard.
+    size_t currCellPos = 0;
+    bool boardUnsolvable = false;
+    while (currCellPos < emptyCells.size() && !boardUnsolvable) {
+        auto currCell = emptyCells[currCellPos];
+        auto currCellValue =
+            solvedBoard.valueAt(currCell.first, currCell.second);
+        uint8_t candidateValue = 1;
+        if (currCellValue != 0) {
+            // We're backtracking - must start with the next candidate value.
+            candidateValue = currCellValue + 1;
+        }
+
+        bool currCellSolved = false;
+        while (!currCellSolved && candidateValue <= 9) {
+            auto result = solvedBoard.setValueAt(
+                currCell.first, currCell.second, candidateValue);
+            if (result == SetValueResult::NoError) {
+                currCellSolved = true;
+            } else {
+                // Try the next value in the cell.
+                candidateValue++;
+            }
+        }
+        if (currCellSolved) {
+            currCellPos++;
+        } else {
+            // currCellVal >= 9 - have to rollback to the previous cell, if
+            // possible.
+            if (currCellPos > 0) {
+                // Resets the current cell before rolling back.
+                solvedBoard.setValueAt(currCell.first, currCell.second, 0);
+                currCellPos--;
+            } else {
+                boardUnsolvable = true;
+            }
+        }
+    }
+    if (boardUnsolvable) {
+        return SolverResult::HasNoSolution;
+    } else {
+        return SolverResult::NoError;
+    }
 }
 
+// TODO: Remove this oveload of solve as soon as the Generator stops calling it!
 SolverResult Solver::solve(const Board &board,
                            const vector<uint8_t> &candidates,
                            Board &solvedBoard) {
@@ -121,9 +183,10 @@ SolverResult Solver::solve(const Board &board,
     }
 }
 
-void Solver::solveForGood(const Board &board,
-                          const SolverProgressCallback &fnProgress,
-                          const SolverFinishedCallback &fnFinished) {
+void Solver::searchSolutions(const Board &board,
+                             const SolverProgressCallback &fnProgress,
+                             const SolverFinishedCallback &fnFinished,
+                             int maxSolutions) {
     vector<Board> solvedBoards;
 
     auto solvable = checkBoard(board);
