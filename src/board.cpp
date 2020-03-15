@@ -51,6 +51,20 @@ uint8_t Board::blankPositionCount() const noexcept {
     return nBlanks;
 }
 
+vector<pair<uint8_t, uint8_t>> Board::getBlankPositions() const noexcept {
+    vector<pair<uint8_t, uint8_t>> blanks;
+
+    for (uint8_t lin = 0; lin < Board::NUM_ROWS; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
+            if (_values[lin][col] == 0) {
+                blanks.emplace_back(make_pair(lin, col));
+            }
+        }
+    }
+
+    return blanks;
+}
+
 SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value) {
     if (value > 9) {
         return SetValueResult::InvalidValue;

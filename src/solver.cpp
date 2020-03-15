@@ -41,24 +41,13 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
 }
 
 SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
-    // const vector<uint8_t> candidates({1, 2, 3, 4, 5, 6, 7, 8, 9});
-
     auto solvable = checkBoard(board);
     if (solvable != SolverResult::NoError) {
         // Board is not solvable.
         return solvable;
     }
 
-    // Gather empty cells.
-    vector<pair<uint8_t, uint8_t>> emptyCells;
-
-    for (uint8_t lin = 0; lin < 9; lin++) {
-        for (uint8_t col = 0; col < 9; col++) {
-            if (board.valueAt(lin, col) == 0) {
-                emptyCells.push_back(make_pair(lin, col));
-            }
-        }
-    }
+    vector<pair<uint8_t, uint8_t>> emptyCells = board.getBlankPositions();
 
     solvedBoard = board;  // board is the starting point for solvedBoard.
     size_t currCellPos = 0;

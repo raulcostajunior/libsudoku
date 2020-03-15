@@ -109,6 +109,14 @@ class Board {
     uint8_t blankPositionCount() const noexcept;
 
     /**
+     * @brief Returns the blank positions in the board.
+     * @return Vector with each blank position as a pair of (row, col)
+     * coordinates.
+     */
+    std::vector<std::pair<std::uint8_t, std::uint8_t>> getBlankPositions() const
+        noexcept;
+
+    /**
      * Returns true if a board has no blank position and is valid -
      * in other words, the board corresponds to a solved puzzle.
      */
