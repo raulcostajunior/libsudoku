@@ -81,7 +81,7 @@ pair<uint8_t, uint8_t> getLessFreqVariation(const vector<Board> &boards) {
             // Skips positions for with only one value.
             continue;
         }
-        int minFreq = INT_MAX;
+        int minFreq = numeric_limits<int>::max();
         uint8_t minFreqValue = 0;
         int totalFreq = 0;
         for (auto it = valuesDistrib[pos].cbegin();
