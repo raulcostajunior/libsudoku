@@ -14,7 +14,7 @@
 using namespace sudoku;
 using namespace std;
 
-static int _timeoutSecs = 1800;
+static int _timeoutSecs = 3600;
 
 // clang-format off
 
@@ -90,16 +90,28 @@ const Board solvable_one_solution (
 );
 
 const Board solvable_two_solutions (
+    // {
+    //     0, 9, 5, 7, 4, 3, 8, 6, 1,
+    //     4, 3, 1, 8, 6, 5, 9, 0, 0,
+    //     8, 0, 6, 1, 9, 2, 5, 4, 3,
+    //     3, 8, 7, 4, 5, 9, 2, 1, 6,
+    //     6, 1, 2, 3, 8, 7, 4, 9, 5,
+    //     5, 4, 9, 2, 1, 6, 7, 3, 8,
+    //     0, 6, 3, 5, 0, 4, 1, 8, 9,
+    //     9, 0, 8, 6, 0, 1, 3, 5, 4,
+    //     1, 5, 4, 9, 3, 8, 6, 0, 2,
+    // }
+
     {
-        0, 9, 5, 7, 4, 3, 8, 6, 1,
-        4, 3, 1, 8, 6, 5, 9, 0, 0,
-        8, 0, 6, 1, 9, 2, 5, 4, 3,
-        3, 8, 7, 4, 5, 9, 2, 1, 6,
-        6, 1, 2, 3, 8, 7, 4, 9, 5,
-        5, 4, 9, 2, 1, 6, 7, 3, 8,
-        0, 6, 3, 5, 0, 4, 1, 8, 9,
-        9, 0, 8, 6, 0, 1, 3, 5, 4,
-        1, 5, 4, 9, 3, 8, 6, 0, 0,
+        6, 0, 0, 1, 0, 8, 2, 0, 3,
+        0, 2, 0, 0, 4, 0, 0, 9, 0,
+        8, 0, 3, 0, 0, 5, 4, 0, 0,
+        5, 0, 4, 6, 0, 7, 0, 0, 9,
+        0, 3, 0, 0, 0, 0, 0, 5, 0,
+        7, 0, 0, 8, 0, 3, 1, 0, 2,
+        0, 0, 1, 7, 0, 0, 9, 0, 6,
+        0, 8, 0, 0, 3, 0, 0, 2, 0,
+        3, 0, 2, 9, 0, 4, 0, 0, 5,
     }
 );
 
@@ -144,7 +156,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
         finished = true;
 
         if (solverResult == SolverResult::AsyncSolvingCancelled) {
-            clog << "\n... AsyncSolve cancelled - timeout after running for "
+            clog << "\n... AsyncSolve cancelled - timeout "
+                    "after running for "
                  << _timeoutSecs << " seconds." << endl;
         } else if (solverResult == SolverResult::NoError) {
             clog << "\n.... AsyncSolve at 100.00%: " << solvedBoards.size()
@@ -165,7 +178,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
         // if (numOfWaits > 1 && progressPercent < 100.0) {
-        //     clog << animPattern[numOfWaits % 4] << " AsyncSolve at "
+        //     clog << animPattern[numOfWaits % 4] << " AsyncSolve
+        //     at "
         //          << progressPercent << "%: " << solutionsFound
         //          << " solution(s) found so far." << endl;
         // }
@@ -174,8 +188,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
     if (numOfWaits >= _timeoutSecs) {
         // Timed-out: cancel
         solver.cancelAsyncSolving();
-        // Sleeps a while so the solver has enough time to call the finished
-        // callback and update the result with
+        // Sleeps a while so the solver has enough time to call the
+        // finished callback and update the result with
         // SolverResult::AsyncSolvingCancelled value.
         this_thread::sleep_for(chrono::seconds(1));
     }
@@ -214,19 +228,22 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
 //     REQUIRE(solved_board.isComplete());
 // }
 
-// TEST_CASE("Cannot solve solvable_board with invalid candidates vector") {
+// TEST_CASE("Cannot solve solvable_board with invalid candidates
+// vector") {
 //     Board solved_board;
 //     Solver solver;
 //     vector<uint8_t> candidates{1, 1, 2, 3, 4, 5, 6, 7, 9};
-//     auto result = solver.solve(solvable_board, candidates, solved_board);
-//     REQUIRE(result == SolverResult::InvalidatesCandidatesVector);
+//     auto result = solver.solve(solvable_board, candidates,
+//     solved_board); REQUIRE(result ==
+//     SolverResult::InvalidatesCandidatesVector);
 // }
 
 // TEST_CASE(
-//     "asyncSolveForGood finds one solution for board with single solution") {
-//     vector<Board> solved_boards;
+//     "asyncSolveForGood finds one solution for board with single
+//     solution") { vector<Board> solved_boards;
 
-//     auto result = solveForGood(solvable_one_solution, solved_boards);
+//     auto result = solveForGood(solvable_one_solution,
+//     solved_boards);
 
 //     REQUIRE(result == SolverResult::NoError);
 //     REQUIRE(solved_boards.size() == 1);
@@ -234,7 +251,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
 // }
 
 TEST_CASE(
-    "asyncSolveForGood finds two solutions for board with two solutions") {
+    "asyncSolveForGood finds two solutions for board with two "
+    "solutions") {
     vector<Board> solved_boards;
 
     auto result = solveForGood(solvable_two_solutions, solved_boards);
@@ -245,39 +263,44 @@ TEST_CASE(
     REQUIRE(solved_boards[1].isComplete());
 }
 
-TEST_CASE("All solutions found by asyncSolveForGood are valid") {
-    vector<Board> solved_boards;
-
-    auto result = solveForGood(solvable_many_solutions, solved_boards);
-
-    REQUIRE(result == SolverResult::NoError);
-    for (size_t i = 0; i < solved_boards.size(); i++) {
-        REQUIRE(solved_boards[i].isComplete());
-    }
-}
-
-TEST_CASE("Cannot spawn more than one asyncSolveForGood simultaneously") {
-    // Starts a lengthy asynchronous solving ...
-    Solver solver;
-    auto result = solver.asyncSolveForGood(solvable_board, nullptr, nullptr);
-
-    // Tries to start a new one - would run simultaneously with the previous.
-    auto secondResult =
-        solver.asyncSolveForGood(solvable_board, nullptr, nullptr);
-
-    REQUIRE(result == SolverResult::AsyncSolvingSubmitted);
-    REQUIRE(secondResult == SolverResult::AsyncSolvingBusy);
-
-    solver.cancelAsyncSolving();  // for graceful async solving exit.
-}
-
-// TEST_CASE(
-//     "asyncSolveForGood finds one solution for a difficult board with one "
-//     "solution") {
+// TEST_CASE("All solutions found by asyncSolveForGood are valid") {
 //     vector<Board> solved_boards;
 
+//     auto result = solveForGood(solvable_many_solutions,
+//     solved_boards);
+
+//     REQUIRE(result == SolverResult::NoError);
+//     for (size_t i = 0; i < solved_boards.size(); i++) {
+//         REQUIRE(solved_boards[i].isComplete());
+//     }
+// }
+
+// TEST_CASE("Cannot spawn more than one asyncSolveForGood
+// simultaneously") {
+//     // Starts a lengthy asynchronous solving ...
+//     Solver solver;
+//     auto result = solver.asyncSolveForGood(solvable_board,
+//     nullptr, nullptr);
+
+//     // Tries to start a new one - would run simultaneously with
+//     the previous. auto secondResult =
+//         solver.asyncSolveForGood(solvable_board, nullptr,
+//         nullptr);
+
+//     REQUIRE(result == SolverResult::AsyncSolvingSubmitted);
+//     REQUIRE(secondResult == SolverResult::AsyncSolvingBusy);
+
+//     solver.cancelAsyncSolving();  // for graceful async solving
+//     exit.
+// }
+
+// TEST_CASE(
+//     "asyncSolveForGood finds one solution for a difficult board
+//     with one " "solution") { vector<Board> solved_boards;
+
 //     auto result =
-//         solveForGood(solvable_board, solved_boards);  // this takes long ...
+//         solveForGood(solvable_board, solved_boards);  // this
+//         takes long ...
 
 //     REQUIRE(result == SolverResult::NoError);
 //     REQUIRE(solved_boards.size() == 1);
