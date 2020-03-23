@@ -126,6 +126,8 @@ class Board {
 
     Board &operator=(const Board &board) noexcept;
 
+    bool operator<(const Board &board) const noexcept;
+
    private:
     // clang-format off
     std::uint8_t _values[NUM_ROWS][NUM_COLS]{

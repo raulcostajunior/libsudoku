@@ -2,6 +2,10 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <iostream>
+#include <memory>
+#include <set>
+#include <thread>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -25,17 +29,20 @@ Solver::~Solver() {
 SolverResult Solver::asyncSolveForGood(const Board &board,
                                        const SolverProgressCallback &fnProgress,
                                        const SolverFinishedCallback &fnFinished,
-                                       int maxSolutions) {
+                                       unsigned maxSolutions) {
     if (_asyncSolvingActive) {
         // Only one solving process can be active at once.
         return SolverResult::AsyncSolvingBusy;
     }
 
+    auto solutions = make_shared<set<Board>>(set<Board>());
+
     _asyncSolvingActive = true;
     _asyncSolvingCancelled = false;
 
-    _solveForGoodWorker = std::thread(&Solver::searchSolutions, this, board,
-                                      fnProgress, fnFinished, maxSolutions);
+    _solveForGoodWorker =
+        std::thread(&Solver::searchSolutions, this, board, fnProgress,
+                    fnFinished, solutions, maxSolutions, 0);
 
     return SolverResult::AsyncSolvingSubmitted;
 }
@@ -175,84 +182,99 @@ SolverResult Solver::solve(const Board &board,
 void Solver::searchSolutions(const Board &board,
                              const SolverProgressCallback &fnProgress,
                              const SolverFinishedCallback &fnFinished,
-                             int maxSolutions) {
-    vector<Board> solvedBoards;
+                             const shared_ptr<set<Board>> solutions,
+                             unsigned maxSolutions, unsigned level) {
+    static int run = 0;
 
-    auto solvable = checkBoard(board);
-    if (solvable != SolverResult::NoError) {
-        // Board is not solvable.
-        _asyncSolvingActive = false;
-        _asyncSolvingCancelled = false;
-        if (fnFinished != nullptr) {
-            fnFinished(solvable, solvedBoards);
-        }
+    if (run++ >= 30) {
+        return;
+    }
+    //
+    // Stopping conditions for the search.
+    //
+    if (_asyncSolvingCancelled) {
+        return;
+    }
+    if (solutions->size() >= maxSolutions) {
+        // Found the maximum number of solutions already. No need to go on.
+        return;
+    }
+    const auto blanks = board.getBlankPositions();
+    if (blanks.size() == 0) {
+        // The board is a solution, no need to go on with the search.
+        clog << "Found solution: level = " << level
+             << "; blanks = " << blanks.size()
+             << "; solutions = " << solutions->size() << "; latest solution:\n"
+             << board << endl;
+        solutions->insert(board);
         return;
     }
 
-    // Gather empty cells
-    vector<pair<uint8_t, uint8_t>> emptyCells;
-
-    for (uint8_t lin = 0; lin < 9; lin++) {
-        for (uint8_t col = 0; col < 9; col++) {
-            if (board.valueAt(lin, col) == 0) {
-                emptyCells.push_back(make_pair(lin, col));
-            }
-        }
+    //
+    // The recursive search itself.
+    //
+    vector<set<uint8_t>> possibleValues;
+    for (size_t i = 0; i < blanks.size(); i++) {
+        possibleValues.emplace_back(
+            board.getPossibleValues(blanks[i].first, blanks[i].second));
+    }
+    if (find_if(possibleValues.cbegin(), possibleValues.cend(),
+                [](set<uint8_t> values) { return values.size() == 0; }) !=
+        possibleValues.cend()) {
+        clog << "Found no solution: level = " << level << "unsovable board:\n"
+             << board << endl;
+        // There's at least one blank position for which there's no option value
+        // - the board is not solvable.
+        return;
     }
 
-    for (size_t i = 0; i < emptyCells.size(); i++) {
+    for (size_t i = 0; i < blanks.size(); i++) {
         if (_asyncSolvingCancelled) {
-            _asyncSolvingActive = false;
-            _asyncSolvingCancelled = false;
-            if (fnFinished != nullptr) {
-                fnFinished(SolverResult::AsyncSolvingCancelled, solvedBoards);
+            break;
+        }
+        // Selects the position with least possible values to be the one that
+        // will be filled next.
+        int minSize = Board::MAX_VAL + 1;
+        int possValIdx = -1;
+        for (size_t j = 0; j < possibleValues.size(); j++) {
+            if (possibleValues[j].size() < minSize) {
+                possValIdx = j;
+                minSize = possibleValues[j].size();
             }
-            return;
         }
-
-        auto emptyCell = emptyCells[i];
-
-        if (fnProgress != nullptr) {
-            fnProgress(((i + 1.0) / emptyCells.size()) * 100.0,
-                       static_cast<unsigned int>(solvedBoards.size()));
-        }
-
-        for (uint8_t value = 1; value < 10; value++) {
-            Board candidateBoard = board;
-            if (candidateBoard.setValueAt(emptyCell.first, emptyCell.second,
-                                          value) == SetValueResult::NoError) {
-                // The current empty cell with the current value is a candidate
-                // for having a solution - tries to solve it.
-                Board solvedBoard;
-                auto result = Solver::solve(candidateBoard, solvedBoard);
-                if (result == SolverResult::NoError) {
-                    // The board could be solved or the insertion of the last
-                    // value solved it.
-                    if (find(begin(solvedBoards), end(solvedBoards),
-                             solvedBoard) == end(solvedBoards)) {
-                        // Solved board is not among the current solutions; add
-                        // it.
-                        solvedBoards.push_back(solvedBoard);
-                    }
-                } else if (result == SolverResult::AlreadySolved) {
-                    // The insertion of value solved candidateBoard
-                    if (find(begin(solvedBoards), end(solvedBoards),
-                             candidateBoard) == end(solvedBoards)) {
-                        solvedBoards.push_back(candidateBoard);
-                    }
+        clog << "Looking for solutions for empty position ("
+             << (int)blanks[possValIdx].first << ", "
+             << (int)blanks[possValIdx].second << ") [" << i << "] with "
+             << blanks.size() << " blanks at level " << level << endl;
+        for (const auto possibleValue : possibleValues[possValIdx]) {
+            Board nextBoard(board);
+            nextBoard.setValueAt(blanks[possValIdx].first,
+                                 blanks[possValIdx].second, possibleValue);
+            if (level == 0) {
+                // When at first level (searching with the original board
+                // puzzle), report progress
+                if (fnProgress != nullptr) {
+                    fnProgress(((i + 1.0) / blanks.size()) * 100.0,
+                               static_cast<unsigned>(solutions->size()));
                 }
             }
+            searchSolutions(nextBoard, fnProgress, fnFinished, solutions,
+                            maxSolutions, level + 1);
         }
+        possibleValues.erase(possibleValues.begin() + possValIdx);
     }
+    if (level == 0) {
+        // Reaching this point at level 0 means we are done.
+        _asyncSolvingActive = false;
+        _asyncSolvingCancelled = false;
 
-    _asyncSolvingActive = false;
-    _asyncSolvingCancelled = false;
-
-    if (fnFinished != nullptr) {
-        if (solvedBoards.size() < 1) {
-            fnFinished(SolverResult::HasNoSolution, solvedBoards);
-        } else {
-            fnFinished(SolverResult::NoError, solvedBoards);
+        if (fnFinished != nullptr) {
+            vector<Board> vb(solutions->cbegin(), solutions->cend());
+            if (solutions->size() < 1) {
+                fnFinished(SolverResult::HasNoSolution, vb);
+            } else {
+                fnFinished(SolverResult::NoError, vb);
+            }
         }
     }
 }

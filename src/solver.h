@@ -4,6 +4,8 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <memory>
+#include <set>
 #include <thread>
 #include <vector>
 
@@ -95,7 +97,7 @@ class Solver {
     SolverResult asyncSolveForGood(const Board &board,
                                    const SolverProgressCallback &fnProgress,
                                    const SolverFinishedCallback &fnFinished,
-                                   int maxSolutions = 50);
+                                   unsigned maxSolutions = 50u);
 
     /**
      * Cancels an async solving processing if there's one going on.
@@ -121,11 +123,33 @@ class Solver {
     SolverResult checkBoard(const Board &board);
 
     // Internal method that does the real work for finding the solutions
-    // to a given board.
+    // to a given board. "level"
+    /**
+     * Recursevilty searches for all the possible solutions for a board, up to
+     * the current value of _maxSolutions.
+     *
+     * @param board a board whose solutions should be found.
+     *
+     * @param fnProgress the callback for reporting progress of the solving
+     * process.
+     *
+     * @param fnFinished the callback for reporing result of the solving
+     * process.
+     *
+     * @param solutions the solutions found so far by searchSolutions.
+     *
+     * @param maxSolutions the maximum number of solutions to find.
+     *
+     * @param level the search level, 0 being the original board, 1 the level
+     * where 1 empty position from the original board has been resolved and the
+     * search is for possible solutions with a given first level set, and so on.
+     *
+     */
     void searchSolutions(const Board &board,
                          const SolverProgressCallback &fnProgress,
                          const SolverFinishedCallback &fnFinished,
-                         int maxSolutions);
+                         const std::shared_ptr<std::set<Board>> solutions,
+                         unsigned maxSolutions, unsigned level);
 
     std::atomic<bool> _asyncSolvingCancelled;
     std::atomic<bool> _asyncSolvingActive;

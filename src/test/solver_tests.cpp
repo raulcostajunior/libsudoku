@@ -122,8 +122,8 @@ const Board solvable_many_solutions (
 SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
     SolverResult result;
     atomic<bool> finished{false};
-    atomic<unsigned> solutionsFound;
-    atomic<double> progressPercent;
+    atomic<unsigned> solutionsFound(0u);
+    atomic<double> progressPercent(0.0);
     Solver solver;
 
     auto currentPrecision = clog.precision();
@@ -164,11 +164,11 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
     while (!finished && numOfWaits < _timeoutSecs) {
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
-        if (numOfWaits > 1 && progressPercent < 100.0) {
-            clog << animPattern[numOfWaits % 4] << " AsyncSolve at "
-                 << progressPercent << "%: " << solutionsFound
-                 << " solution(s) found so far." << endl;
-        }
+        // if (numOfWaits > 1 && progressPercent < 100.0) {
+        //     clog << animPattern[numOfWaits % 4] << " AsyncSolve at "
+        //          << progressPercent << "%: " << solutionsFound
+        //          << " solution(s) found so far." << endl;
+        // }
     }
 
     if (numOfWaits >= _timeoutSecs) {
@@ -185,53 +185,53 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
     return result;
 }
 
-TEST_CASE("Empty board is not solvable") {
-    Board solved_board;
-    Solver solver;
-    auto result = solver.solve(clear_board, solved_board);
-    REQUIRE(result == SolverResult::EmptyBoard);
-}
+// TEST_CASE("Empty board is not solvable") {
+//     Board solved_board;
+//     Solver solver;
+//     auto result = solver.solve(clear_board, solved_board);
+//     REQUIRE(result == SolverResult::EmptyBoard);
+// }
 
-TEST_CASE("Invalid board is not solvable") {
-    Board solved_board;
-    Solver solver;
-    auto result = solver.solve(invalid_board, solved_board);
-    REQUIRE(result == SolverResult::InvalidBoard);
-}
+// TEST_CASE("Invalid board is not solvable") {
+//     Board solved_board;
+//     Solver solver;
+//     auto result = solver.solve(invalid_board, solved_board);
+//     REQUIRE(result == SolverResult::InvalidBoard);
+// }
 
-TEST_CASE("Cannot solve unsolvable_board") {
-    Board solved_board;
-    Solver solver;
-    auto result = solver.solve(unsolvable_board, solved_board);
-    REQUIRE(result == SolverResult::HasNoSolution);
-}
+// TEST_CASE("Cannot solve unsolvable_board") {
+//     Board solved_board;
+//     Solver solver;
+//     auto result = solver.solve(unsolvable_board, solved_board);
+//     REQUIRE(result == SolverResult::HasNoSolution);
+// }
 
-TEST_CASE("Can solve solvable_board") {
-    Board solved_board;
-    Solver solver;
-    auto result = solver.solve(solvable_board, solved_board);
-    REQUIRE(result == SolverResult::NoError);
-    REQUIRE(solved_board.isComplete());
-}
+// TEST_CASE("Can solve solvable_board") {
+//     Board solved_board;
+//     Solver solver;
+//     auto result = solver.solve(solvable_board, solved_board);
+//     REQUIRE(result == SolverResult::NoError);
+//     REQUIRE(solved_board.isComplete());
+// }
 
-TEST_CASE("Cannot solve solvable_board with invalid candidates vector") {
-    Board solved_board;
-    Solver solver;
-    vector<uint8_t> candidates{1, 1, 2, 3, 4, 5, 6, 7, 9};
-    auto result = solver.solve(solvable_board, candidates, solved_board);
-    REQUIRE(result == SolverResult::InvalidatesCandidatesVector);
-}
+// TEST_CASE("Cannot solve solvable_board with invalid candidates vector") {
+//     Board solved_board;
+//     Solver solver;
+//     vector<uint8_t> candidates{1, 1, 2, 3, 4, 5, 6, 7, 9};
+//     auto result = solver.solve(solvable_board, candidates, solved_board);
+//     REQUIRE(result == SolverResult::InvalidatesCandidatesVector);
+// }
 
-TEST_CASE(
-    "asyncSolveForGood finds one solution for board with single solution") {
-    vector<Board> solved_boards;
+// TEST_CASE(
+//     "asyncSolveForGood finds one solution for board with single solution") {
+//     vector<Board> solved_boards;
 
-    auto result = solveForGood(solvable_one_solution, solved_boards);
+//     auto result = solveForGood(solvable_one_solution, solved_boards);
 
-    REQUIRE(result == SolverResult::NoError);
-    REQUIRE(solved_boards.size() == 1);
-    REQUIRE(solved_boards[0].isComplete());
-}
+//     REQUIRE(result == SolverResult::NoError);
+//     REQUIRE(solved_boards.size() == 1);
+//     REQUIRE(solved_boards[0].isComplete());
+// }
 
 TEST_CASE(
     "asyncSolveForGood finds two solutions for board with two solutions") {
@@ -271,15 +271,15 @@ TEST_CASE("Cannot spawn more than one asyncSolveForGood simultaneously") {
     solver.cancelAsyncSolving();  // for graceful async solving exit.
 }
 
-TEST_CASE(
-    "asyncSolveForGood finds one solution for a difficult board with one "
-    "solution") {
-    vector<Board> solved_boards;
+// TEST_CASE(
+//     "asyncSolveForGood finds one solution for a difficult board with one "
+//     "solution") {
+//     vector<Board> solved_boards;
 
-    auto result =
-        solveForGood(solvable_board, solved_boards);  // this takes long ...
+//     auto result =
+//         solveForGood(solvable_board, solved_boards);  // this takes long ...
 
-    REQUIRE(result == SolverResult::NoError);
-    REQUIRE(solved_boards.size() == 1);
-    REQUIRE(solved_boards[0].isComplete());
-}
+//     REQUIRE(result == SolverResult::NoError);
+//     REQUIRE(solved_boards.size() == 1);
+//     REQUIRE(solved_boards[0].isComplete());
+// }
