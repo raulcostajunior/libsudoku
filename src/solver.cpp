@@ -194,20 +194,6 @@ void Solver::searchSolutions(const Board &board,
         possibleValues.emplace_back(
             board.getPossibleValues(blanks[i].first, blanks[i].second));
     }
-    if (find_if(possibleValues.cbegin(), possibleValues.cend(),
-                [](set<uint8_t> values) { return values.size() == 0; }) !=
-        possibleValues.cend()) {
-        // There's at least one blank position for which there's no option value
-        // - the board is not solvable.
-        if (level == 0) {
-            _asyncSolvingActive = false;
-            _asyncSolvingCancelled = false;
-            if (fnFinished != nullptr) {
-                fnFinished(SolverResult::HasNoSolution, vector<Board>());
-            }
-        }
-        return;
-    }
     if (_asyncSolvingCancelled) {
         if (level == 0) {
             _asyncSolvingActive = false;
@@ -238,10 +224,23 @@ void Solver::searchSolutions(const Board &board,
     int minSize = Board::MAX_VAL + 1;
     int possValIdx = -1;
     for (size_t j = 0; j < possibleValues.size(); j++) {
-        if (possibleValues[j].size() < minSize) {
+        if (possibleValues[j].size() > 0 &&
+            possibleValues[j].size() < minSize) {
             possValIdx = j;
             minSize = possibleValues[j].size();
         }
+    }
+    if (minSize == Board::MAX_VAL + 1) {
+        // There's at least one blank position for which there's no option value
+        // - the board is not solvable.
+        if (level == 0) {
+            _asyncSolvingActive = false;
+            _asyncSolvingCancelled = false;
+            if (fnFinished != nullptr) {
+                fnFinished(SolverResult::HasNoSolution, vector<Board>());
+            }
+        }
+        return;
     }
     for (const auto possibleValue : possibleValues[possValIdx]) {
         Board nextBoard(board);
@@ -258,8 +257,6 @@ void Solver::searchSolutions(const Board &board,
         searchSolutions(nextBoard, fnProgress, fnFinished, solutions,
                         maxSolutions, level + 1);
     }
-    blanks.erase(blanks.begin() + possValIdx);
-    possibleValues.erase(possibleValues.begin() + possValIdx);
     if (level == 0) {
         // Reaching this point at level 0 means we are done.
         _asyncSolvingActive = false;

@@ -103,6 +103,20 @@ const Board solvable_two_solutions (
     }
 );
 
+const Board solvable_three_solutions (
+    {
+        0, 7, 5, 8, 4, 6, 1, 0, 0,
+        8, 4, 0, 0, 0, 0, 9, 7, 0,
+        0, 0, 0, 0, 0, 0, 0, 4, 0,
+        7, 0, 0, 5, 0, 0, 2, 9, 1,
+        0, 0, 0, 0, 0, 4, 7, 0, 8,
+        2, 0, 0, 0, 9, 0, 0, 5, 0,
+        4, 8, 9, 0, 0, 0, 5, 0, 2,
+        6, 0, 0, 0, 8, 0, 3, 0, 9,
+        0, 1, 2, 6, 5, 9, 0, 0, 0,
+    }
+);
+
 const Board solvable_many_solutions (
     {
         0, 9, 5, 0, 4, 0, 0, 6, 0,
@@ -237,14 +251,14 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "asyncSolveForGood finds two solutions for board with two "
+    "asyncSolveForGood finds 3 solutions for board with 3 "
     "solutions") {
     vector<Board> solved_boards;
 
-    auto result = solveForGood(solvable_two_solutions, solved_boards);
+    auto result = solveForGood(solvable_three_solutions, solved_boards);
 
     REQUIRE(result == SolverResult::NoError);
-    REQUIRE(solved_boards.size() == 2);
+    REQUIRE(solved_boards.size() == 3);
     REQUIRE(solved_boards[0].isComplete());
     REQUIRE(solved_boards[1].isComplete());
 }
