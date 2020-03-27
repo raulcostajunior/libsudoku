@@ -300,17 +300,6 @@ bool Board::operator==(const Board &board) const noexcept {
     return true;
 }
 
-bool Board::operator<(const Board &board) const noexcept {
-    for (uint8_t lin = 0; lin < Board::NUM_ROWS; lin++) {
-        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
-            if (_values[lin][col] >= board._values[lin][col]) {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
 Board &Board::operator=(const Board &board) noexcept {
     if (this == &board) {
         // There's nothing to do

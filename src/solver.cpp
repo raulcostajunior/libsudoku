@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
-#include <set>
 #include <thread>
 #include <unordered_set>
 #include <utility>
@@ -34,7 +33,7 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
         return SolverResult::AsyncSolvingBusy;
     }
 
-    auto solutions = make_shared<set<Board>>(set<Board>());
+    auto solutions = make_shared<vector<Board>>(vector<Board>());
 
     _asyncSolvingActive = true;
     _asyncSolvingCancelled = false;
@@ -46,6 +45,8 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
     return SolverResult::AsyncSolvingSubmitted;
 }
 
+// TODO: Replace method body with a call for searchSolutions with 1 for
+// maxSolutions and nullptr for the callbacks.
 SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
     auto solvable = checkBoard(board);
     if (solvable != SolverResult::NoError) {
@@ -181,12 +182,12 @@ SolverResult Solver::solve(const Board &board,
 void Solver::searchSolutions(const Board &board,
                              const SolverProgressCallback &fnProgress,
                              const SolverFinishedCallback &fnFinished,
-                             const shared_ptr<set<Board>> solutions,
+                             const shared_ptr<vector<Board>> solutions,
                              unsigned maxSolutions, unsigned level) {
     auto blanks = board.getBlankPositions();
     if (blanks.size() == 0) {
         // The board is a solution, no need to go on with the search.
-        solutions->insert(board);
+        solutions->push_back(board);
         return;
     }
     vector<set<uint8_t>> possibleValues;
@@ -242,16 +243,20 @@ void Solver::searchSolutions(const Board &board,
         }
         return;
     }
-    for (const auto possibleValue : possibleValues[possValIdx]) {
+    vector<uint8_t> possVals(possibleValues[possValIdx].cbegin(),
+                             possibleValues[possValIdx].cend());
+    for (size_t i = 0; i < possVals.size(); i++) {
         Board nextBoard(board);
         nextBoard.setValueAt(blanks[possValIdx].first,
-                             blanks[possValIdx].second, possibleValue);
+                             blanks[possValIdx].second, possVals[i]);
         if (level == 0) {
             // When at first level (searching with the original board
-            // puzzle), report progress
+            // puzzle), report progress (a rough aproximation based on the
+            // progress of depth first searches for each possible value at the
+            // inital search node).
             if (fnProgress != nullptr) {
-                // fnProgress(((i + 1.0) / blanks.size()) * 100.0,
-                //            static_cast<unsigned>(solutions->size()));
+                fnProgress(((i + 1.0) / possVals.size()) * 100.0,
+                           static_cast<unsigned>(solutions->size()));
             }
         }
         searchSolutions(nextBoard, fnProgress, fnFinished, solutions,

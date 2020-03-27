@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <set>
 #include <thread>
 #include <vector>
 
@@ -148,7 +147,7 @@ class Solver {
     void searchSolutions(const Board &board,
                          const SolverProgressCallback &fnProgress,
                          const SolverFinishedCallback &fnFinished,
-                         const std::shared_ptr<std::set<Board>> solutions,
+                         const std::shared_ptr<std::vector<Board>> solutions,
                          unsigned maxSolutions, unsigned level);
 
     std::atomic<bool> _asyncSolvingCancelled;

@@ -14,7 +14,7 @@
 using namespace sudoku;
 using namespace std;
 
-static int _timeoutSecs = 3600;
+static int _timeoutSecs = 1800;
 
 // clang-format off
 
@@ -179,12 +179,11 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
     while (!finished && numOfWaits < _timeoutSecs) {
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
-        // if (numOfWaits > 1 && progressPercent < 100.0) {
-        //     clog << animPattern[numOfWaits % 4] << " AsyncSolve
-        //     at "
-        //          << progressPercent << "%: " << solutionsFound
-        //          << " solution(s) found so far." << endl;
-        // }
+        if (numOfWaits > 1 && progressPercent < 100.0) {
+            clog << animPattern[numOfWaits % 4] << " AsyncSolve at "
+                 << progressPercent << "%: " << solutionsFound
+                 << " solution(s) found so far." << endl;
+        }
     }
 
     if (numOfWaits >= _timeoutSecs) {
@@ -275,6 +274,9 @@ TEST_CASE("All solutions found by asyncSolveForGood are valid") {
         REQUIRE(solved_boards[i].isComplete());
     }
 }
+
+// TODO: add TEST_CASE for limit of solutions found - use a limit lower than the
+// number of solutions for solvable_many_sdolutions.
 
 TEST_CASE("Cannot spawn more than one asyncSolveForGood simultaneously") {
     // Starts a lengthy asynchronous solving ...
