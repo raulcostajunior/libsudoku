@@ -232,14 +232,8 @@ void Generator::generate(PuzzleDifficulty difficulty,
 
     // Reduces the number of solutions by setting some of the empty positions.
     // The positions will be optimally set to reduce the board solution set as
-    // fast as possible before the minimum number of empty positions for the
-    // level is reached. The positions that will be filled are those that
-    // eliminate the biggest number of elements from the generated board
-    // solutions set - the value and position that are most frequent among all
-    // the solutions, but that are not the same for all of them. If the number
-    // of solutions in the solution set reaches 1 before the minimum number of
-    // empty positions in the generated board is reached, the reduction process
-    // is also considered complete.
+    // fast as possible. The reduction finishes as soon as the number of
+    // solutions reaches 1.
     vector<Board> boardSolutions;
     atomic<bool> solvingFinished(false);
     atomic<bool> solvingCancelled(false);
@@ -275,15 +269,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
     if (fnProgress != nullptr) {
         fnProgress(currentStep, totalSteps);
     }
-    while (boardSolutions.size() > 1 &&
-           genBoard.blankPositionCount() >
-               Generator::minEmptyPositions(difficulty)) {
-        clog << "@Generator::generate:\n\tboardSolutions has '"
-             << boardSolutions.size() << "' solutions.\n\t genBoard has '"
-             << (size_t)genBoard.blankPositionCount()
-             << "' empty positions.\n\tgenBoard:\n"
-             << genBoard << endl;
-
+    while (boardSolutions.size() > 1) {
         const pair<uint8_t, uint8_t> lessFreqVariation =
             getLessFreqVariation(boardSolutions);
         const uint8_t lfvRow = lessFreqVariation.second / Board::NUM_COLS;
@@ -293,27 +279,12 @@ void Generator::generate(PuzzleDifficulty difficulty,
         for (size_t i = 0; i < boardSolutions.size(); i++) {
             if (boardSolutions[i].valueAt(lfvRow, lfvCol) ==
                 lessFreqVariation.first) {
-                clog << "Board solution #" << i << " has value "
-                     << (int)lessFreqVariation.first << " at (" << (int)lfvRow
-                     << ", " << (int)lfvCol << "); will be kept." << endl;
+                // Board solution has the less frequent variation value at the
+                // filled position - it is not a solution anymore.
                 reducSolutions.emplace_back(boardSolutions[i]);
-            } else {
-                clog << "Board solution #" << i << " has value "
-                     << (int)boardSolutions[i].valueAt(lfvRow, lfvCol)
-                     << " at (" << (int)lfvRow << ", " << (int)lfvCol
-                     << "); will be removed." << endl;
             }
         }
         std::swap(boardSolutions, reducSolutions);
-        // const auto newEnd = remove_if(
-        //     boardSolutions.begin(), boardSolutions.end(),
-        //     [&lessFreqVariation](const Board &board) {
-        //         return board.valueAt(
-        //                    lessFreqVariation.second / Board::NUM_COLS,
-        //                    lessFreqVariation.second % Board::NUM_COLS) !=
-        //                lessFreqVariation.first;
-        //     });
-        // boardSolutions.erase(newEnd, boardSolutions.end());
         if (processGenCancelled(fnFinished)) {
             return;
         }
