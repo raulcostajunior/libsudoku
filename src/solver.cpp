@@ -101,7 +101,6 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
     }
 }
 
-// TODO: Remove this oveload of solve as soon as the Generator stops calling it!
 SolverResult Solver::solve(const Board &board,
                            const vector<uint8_t> &candidates,
                            Board &solvedBoard) {
