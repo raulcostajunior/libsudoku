@@ -68,8 +68,6 @@ GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard,
              << " milliseconds:\n"
              << generatedBoard
              << "\nblanks:" << (int)generatedBoard.blankPositionCount()
-             << "\nminBlank allowed:"
-             << (int)Generator::minEmptyPositions(difficulty)
              << "\nmaxBlank allowed:"
              << (int)Generator::maxEmptyPositions(difficulty) << endl;
     } else {
@@ -88,7 +86,6 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
     REQUIRE(genBoard.isValid());
 
     auto nBlanks = genBoard.blankPositionCount();
-    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::Easy)));
     REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::Easy)));
 
     Solver solver;
@@ -115,8 +112,7 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
     for (size_t i = 0; i < genBoardSolutions.size(); i++) {
         clog << "Board #" << i << ":\n" << genBoardSolutions[i] << endl;
     }
-    REQUIRE((genBoardSolutions.size() == 1 ||
-             nBlanks == Generator::minEmptyPositions(PuzzleDifficulty::Easy)));
+    REQUIRE(genBoardSolutions.size() == 1);
 }
 
 TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
@@ -127,8 +123,7 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
     REQUIRE(genBoard.isValid());
 
     auto nBlanks = genBoard.blankPositionCount();
-    REQUIRE(
-        (nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::Medium)));
+
     REQUIRE(
         (nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::Medium)));
 
@@ -156,9 +151,7 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
     for (size_t i = 0; i < genBoardSolutions.size(); i++) {
         clog << "Board #" << i << ":\n" << genBoardSolutions[i] << endl;
     }
-    REQUIRE(
-        (genBoardSolutions.size() == 1 ||
-         nBlanks == Generator::minEmptyPositions(PuzzleDifficulty::Medium)));
+    REQUIRE(genBoardSolutions.size() == 1);
 }
 
 TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
@@ -169,7 +162,6 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
     REQUIRE(genBoard.isValid());
 
     auto nBlanks = genBoard.blankPositionCount();
-    REQUIRE((nBlanks >= Generator::minEmptyPositions(PuzzleDifficulty::Hard)));
     REQUIRE((nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::Hard)));
 
     Solver solver;
@@ -196,8 +188,7 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
     for (size_t i = 0; i < genBoardSolutions.size(); i++) {
         clog << "Board #" << i << ":\n" << genBoardSolutions[i] << endl;
     }
-    REQUIRE((genBoardSolutions.size() == 1 ||
-             nBlanks == Generator::minEmptyPositions(PuzzleDifficulty::Hard)));
+    REQUIRE(genBoardSolutions.size() == 1);
 }
 
 TEST_CASE("Cannot spawn more than one asyncGenerate simultaneously") {

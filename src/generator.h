@@ -50,16 +50,6 @@ class Generator {
      */
     static uint8_t maxEmptyPositions(PuzzleDifficulty difficulty) noexcept;
 
-    /**
-     * The minimum number of empty positions in a board generated for a
-     * given difficulty level.
-     *
-     * @param the difficulty level of the board to generate.
-     * @return the minimum number of empty positions for the provided
-     *         difficulty level.
-     */
-    static uint8_t minEmptyPositions(PuzzleDifficulty difficulty) noexcept;
-
    private:
     void generate(PuzzleDifficulty difficulty,
                   const GeneratorProgressCallback &fnProgress,
