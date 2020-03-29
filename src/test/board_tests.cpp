@@ -5,8 +5,6 @@
 
 using namespace sudoku;
 
-// TODO: add tests to cover Board operator <
-
 const Board solved_board(
     // clang-format off
     {

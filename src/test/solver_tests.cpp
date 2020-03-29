@@ -133,7 +133,8 @@ const Board solvable_many_solutions (
 
 // clang-format on
 
-SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
+SolverResult solveForGood(const Board &board, vector<Board> &solutions,
+                          unsigned limit = 10000) {
     SolverResult result;
     atomic<bool> finished{false};
     atomic<unsigned> solutionsFound(0u);
@@ -167,8 +168,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions) {
         }
     };
 
-    result =
-        solver.asyncSolveForGood(board, asyncSolveProgress, asyncSolveFinished);
+    result = solver.asyncSolveForGood(board, asyncSolveProgress,
+                                      asyncSolveFinished, limit);
     if (result != SolverResult::AsyncSolvingSubmitted) {
         return result;
     }
@@ -275,8 +276,22 @@ TEST_CASE("All solutions found by asyncSolveForGood are valid") {
     }
 }
 
-// TODO: add TEST_CASE for limit of solutions found - use a limit lower than the
-// number of solutions for solvable_many_sdolutions.
+TEST_CASE(
+    "The limit on maximum number of solutions to find is being respected") {
+    vector<Board> solved_boards;
+
+    // Finds the total number of solutions for the board with no specified
+    // limits.
+    auto result = solveForGood(solvable_many_solutions, solved_boards);
+
+    size_t totalOfSolutions = solved_boards.size();
+    solved_boards.clear();
+
+    // Searches for solutions with a limit inferior to the already known total.
+    result = solveForGood(solvable_many_solutions, solved_boards,
+                          totalOfSolutions - 1);
+    REQUIRE(solved_boards.size() == totalOfSolutions - 1);
+}
 
 TEST_CASE("Cannot spawn more than one asyncSolveForGood simultaneously") {
     // Starts a lengthy asynchronous solving ...

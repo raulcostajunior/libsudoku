@@ -18,9 +18,7 @@ enum class SolverResult : uint8_t {
     EmptyBoard,
     AlreadySolved,
     HasNoSolution,
-    InvalidatesCandidatesVector,  // TODO: remove this value when the solver
-                                  // overload that accepts the candidates vector
-                                  // is removed.
+    InvalidatesCandidatesVector,
     AsyncSolvingCancelled,
     AsyncSolvingSubmitted,
     AsyncSolvingBusy

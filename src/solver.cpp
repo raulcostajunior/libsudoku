@@ -45,60 +45,31 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
     return SolverResult::AsyncSolvingSubmitted;
 }
 
-// TODO: Replace method body with a call for searchSolutions with 1 for
-// maxSolutions and nullptr for the callbacks.
 SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
     auto solvable = checkBoard(board);
     if (solvable != SolverResult::NoError) {
         // Board is not solvable.
         return solvable;
     }
-
-    vector<pair<uint8_t, uint8_t>> emptyCells = board.getBlankPositions();
-
-    solvedBoard = board;  // board is the starting point for solvedBoard.
-    size_t currCellPos = 0;
-    bool boardUnsolvable = false;
-    while (currCellPos < emptyCells.size() && !boardUnsolvable) {
-        auto currCell = emptyCells[currCellPos];
-        auto currCellValue =
-            solvedBoard.valueAt(currCell.first, currCell.second);
-        uint8_t candidateValue = 1;
-        if (currCellValue != 0) {
-            // We're backtracking - must start with the next candidate value.
-            candidateValue = currCellValue + 1;
-        }
-
-        bool currCellSolved = false;
-        while (!currCellSolved && candidateValue <= 9) {
-            auto result = solvedBoard.setValueAt(
-                currCell.first, currCell.second, candidateValue);
-            if (result == SetValueResult::NoError) {
-                currCellSolved = true;
-            } else {
-                // Try the next value in the cell.
-                candidateValue++;
-            }
-        }
-        if (currCellSolved) {
-            currCellPos++;
-        } else {
-            // currCellVal >= 9 - have to rollback to the previous cell, if
-            // possible.
-            if (currCellPos > 0) {
-                // Resets the current cell before rolling back.
-                solvedBoard.setValueAt(currCell.first, currCell.second, 0);
-                currCellPos--;
-            } else {
-                boardUnsolvable = true;
-            }
-        }
+    SolverResult result;
+    auto solutions = make_shared<vector<Board>>(vector<Board>());
+    searchSolutions(
+        board, nullptr,
+        [&result](SolverResult solvRes, vector<Board>) {
+            result = solvRes;
+            // Ignore the vector of solutions passed as an argument to the
+            // callback. The vector of solutions will be pointed by the
+            // shared_ptr passed as the next argument to searchSolutions. The
+            // callback argument is used when searchSolutions is called
+            // asynchronously in a worker thread and the callback is the only
+            // way to communicate the results before finishing the worker
+            // thread.
+        },
+        solutions, 1, 0);
+    if (solutions->size() > 0) {
+        solvedBoard = (*solutions)[0];
     }
-    if (boardUnsolvable) {
-        return SolverResult::HasNoSolution;
-    } else {
-        return SolverResult::NoError;
-    }
+    return result;
 }
 
 SolverResult Solver::solve(const Board &board,
