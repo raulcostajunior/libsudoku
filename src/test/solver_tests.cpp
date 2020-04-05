@@ -138,6 +138,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
     SolverResult result;
     atomic<bool> finished{false};
     atomic<unsigned> solutionsFound(0u);
+    atomic<unsigned> unsolvablesFound(0u);
     atomic<double> progressPercent(0.0);
     Solver solver;
 
@@ -145,11 +146,13 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
 
     clog << fixed << setprecision(2);
 
-    auto asyncSolveProgress = [&progressPercent, &solutionsFound](
-                                  double progress, unsigned solutions) {
-        progressPercent = progress;
-        solutionsFound = solutions;
-    };
+    auto asyncSolveProgress =
+        [&progressPercent, &unsolvablesFound, &solutionsFound](
+            double progress, unsigned unsolvables, unsigned solutions) {
+            progressPercent = progress;
+            unsolvablesFound = unsolvables;
+            solutionsFound = solutions;
+        };
 
     auto asyncSolveFinished = [&solutions, &result, &finished](
                                   SolverResult solverResult,
@@ -182,7 +185,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
         numOfWaits++;
         if (numOfWaits > 1 && progressPercent < 100.0) {
             clog << animPattern[numOfWaits % 4] << " AsyncSolve at "
-                 << progressPercent << "%: " << solutionsFound
+                 << progressPercent << "%: " << unsolvablesFound
+                 << "non-solvables(s) and " << solutionsFound
                  << " solution(s) found so far." << endl;
         }
     }

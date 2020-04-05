@@ -120,10 +120,10 @@ uint8_t Generator::maxEmptyPositions(PuzzleDifficulty difficulty) noexcept {
 
     switch (difficulty) {
         case PuzzleDifficulty::Hard:
-            max = 66;
+            max = 58;
             break;
         case PuzzleDifficulty::Medium:
-            max = 46;
+            max = 48;
             break;
         default:  // EASY
             max = 34;
@@ -154,7 +154,10 @@ void Generator::generate(PuzzleDifficulty difficulty,
     random_device randDev;
     mt19937 randEngine(randDev());
 
-    const uint8_t totalSteps = 6;
+    // The last step, reduction of empty positions to guarantee single solution,
+    // is the one that takes longer, specially for the Hard level.
+    const uint8_t totalSteps = 5;
+
     uint8_t currentStep = 1;  // Step 1 -> random candidate vector generation.
 
     if (fnProgress != nullptr) {
@@ -214,65 +217,66 @@ void Generator::generate(PuzzleDifficulty difficulty,
                             emptyPos % Board::NUM_COLS, 0);
     }
 
-    // Reduces the number of solutions by setting some of the empty positions.
-    // The positions will be optimally set to reduce the board solution set as
-    // fast as possible. The reduction finishes as soon as the number of
-    // solutions reaches 1.
-    vector<Board> boardSolutions;
-    atomic<bool> solvingFinished(false);
-    atomic<bool> solvingCancelled(false);
-    solver.asyncSolveForGood(
-        genBoard,
-        [&solver, &fnFinished, &solvingCancelled, this](double, unsigned) {
-            if (processGenCancelled(fnFinished)) {
-                // Generation has been cancelled - cancel the async solving.
-                solver.cancelAsyncSolving();
-                solvingCancelled = true;
-            }
-        },
-        [&boardSolutions, &solvingFinished](SolverResult,
-                                            vector<Board> solutions) {
-            // Async solving finished - as we departed from a valid and solvable
-            // board there's no need to test for SolverResult value.
-            solvingFinished = true;
-            boardSolutions = solutions;
-        });
-    currentStep++;  // Step 5 -> search for all solutions of the current board.
+    // Steps 5 -> Fill the empty positions one by one until the generated
+    // board has only one solution.
+    currentStep++;
     if (fnProgress != nullptr) {
         fnProgress(currentStep, totalSteps);
-    }
-    while (!solvingFinished && !solvingCancelled) {
-        this_thread::sleep_for(chrono::milliseconds(100));
-    }
-    if (solvingCancelled) {
-        // Solving cancelled (after generation cancelled). Nothing else to do.
-        return;
     }
 
-    currentStep++;  // Step 6 -> reduce number of board solutions.
-    if (fnProgress != nullptr) {
-        fnProgress(currentStep, totalSteps);
-    }
-    while (boardSolutions.size() > 1) {
-        const pair<uint8_t, uint8_t> lessFreqVariation =
-            getLessFreqVariation(boardSolutions);
-        const uint8_t lfvRow = lessFreqVariation.second / Board::NUM_COLS;
-        const uint8_t lfvCol = lessFreqVariation.second % Board::NUM_COLS;
-        genBoard.setValueAt(lfvRow, lfvCol, lessFreqVariation.first);
-        vector<Board> reducSolutions;
-        for (size_t i = 0; i < boardSolutions.size(); i++) {
-            if (boardSolutions[i].valueAt(lfvRow, lfvCol) ==
-                lessFreqVariation.first) {
-                // Board solution has the less frequent variation value at the
-                // filled position - it is not a solution anymore.
-                reducSolutions.emplace_back(boardSolutions[i]);
-            }
-        }
-        std::swap(boardSolutions, reducSolutions);
-        if (processGenCancelled(fnFinished)) {
+    // The positions will be optimally set to reduce the board solution set as
+    // fast as possible.
+    do {
+        vector<Board> boardSolutions;
+        atomic<bool> solvingFinished(false);
+        atomic<bool> solvingCancelled(false);
+
+        if (solvingCancelled) {
+            // Solving cancelled (after generation cancelled). Nothing else to
+            // do.
             return;
         }
-    }
+
+        solver.asyncSolveForGood(
+            genBoard,
+            [&solver, &fnFinished, &solvingCancelled, this](double, unsigned,
+                                                            unsigned) {
+                if (processGenCancelled(fnFinished)) {
+                    // Generation has been cancelled - cancel the async solving.
+                    solver.cancelAsyncSolving();
+                    solvingCancelled = true;
+                }
+            },
+            [&boardSolutions, &solvingFinished](SolverResult,
+                                                vector<Board> solutions) {
+                // Async solving finished - as we departed from a valid and
+                // solvable board there's no need to test for SolverResult
+                // value.
+                solvingFinished = true;
+                boardSolutions = solutions;
+            },
+            2);
+
+        // Waits for the async search for solutions to finish.
+        while (!solvingFinished && !solvingCancelled) {
+            this_thread::sleep_for(chrono::milliseconds(100));
+        }
+
+        if (boardSolutions.size() == 1) {
+            // Current genBoard only has one solution; it is a valid Sudoku
+            // puzzle; leave reduction phase.
+            break;
+        } else {
+            // Current genBoard still has more than one solution; continue
+            // reduction of empty positions.
+            const pair<uint8_t, uint8_t> lessFreqVariation =
+                getLessFreqVariation(boardSolutions);
+            const uint8_t lfvRow = lessFreqVariation.second / Board::NUM_COLS;
+            const uint8_t lfvCol = lessFreqVariation.second % Board::NUM_COLS;
+            genBoard.setValueAt(lfvRow, lfvCol, lessFreqVariation.first);
+        }
+
+    } while (true);
 
     _asyncGenActive = false;
     _asyncGenCancelled = false;

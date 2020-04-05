@@ -15,15 +15,6 @@ using namespace std;
 
 static unsigned _timeoutSecs = 1200u;
 
-// TODO: remove the minimum of empty positions thresholds and assertions - the
-// stopping condition for filling empty positions while generating is only the
-// number of solutions. What is guaranteed is only that the number of empties
-// cannot be above the maximum - increase the maximum for the HARD to 66, for
-// MEDIUM to 46 and for the EASY to 34.
-
-// TODO: add assertions on the number of solutions being one for all the
-// generated boards.
-
 GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard,
                          unsigned timeoutSecs) {
     GeneratorResult result;
@@ -102,7 +93,8 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
                                               const vector<Board> &solutions) {
             resultSolveAll = result;
             genBoardSolutions = solutions;
-        });
+        },
+        2);
     while (resultSolveAll != SolverResult::NoError &&
            resultSolveAll != SolverResult::AsyncSolvingCancelled) {
         this_thread::sleep_for(chrono::milliseconds(1000));
@@ -141,7 +133,8 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
                                               const vector<Board> &solutions) {
             resultSolveAll = result;
             genBoardSolutions = solutions;
-        });
+        },
+        2);
     while (resultSolveAll != SolverResult::NoError &&
            resultSolveAll != SolverResult::AsyncSolvingCancelled) {
         this_thread::sleep_for(chrono::milliseconds(1000));
@@ -178,7 +171,8 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
                                               const vector<Board> &solutions) {
             resultSolveAll = result;
             genBoardSolutions = solutions;
-        });
+        },
+        2);
     while (resultSolveAll != SolverResult::NoError &&
            resultSolveAll != SolverResult::AsyncSolvingCancelled) {
         this_thread::sleep_for(chrono::milliseconds(1000));

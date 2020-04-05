@@ -26,7 +26,7 @@ enum class SolverResult : uint8_t {
 
 // Signature of callback to report progress of an async solving process.
 using SolverProgressCallback = std::function<void(
-    double /* progressPercentage */, unsigned /* numSolutions */)>;
+    double /* progressPercentage */, unsigned /* unsolvablesFound */, unsigned /* numSolutions */)>;
 
 // Signature of callback to report result of an async solving process.
 using SolverFinishedCallback = std::function<void(

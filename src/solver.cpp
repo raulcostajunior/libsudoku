@@ -38,6 +38,10 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
     _asyncSolvingActive = true;
     _asyncSolvingCancelled = false;
 
+    if (_solveForGoodWorker.joinable()) {
+        _solveForGoodWorker.join();
+    }
+
     _solveForGoodWorker =
         std::thread(&Solver::searchSolutions, this, board, fnProgress,
                     fnFinished, solutions, maxSolutions, 0);
@@ -154,6 +158,7 @@ void Solver::searchSolutions(const Board &board,
                              const SolverFinishedCallback &fnFinished,
                              const shared_ptr<vector<Board>> solutions,
                              unsigned maxSolutions, unsigned level) {
+    static unsigned unsolvablesFound = 0;
     auto blanks = board.getBlankPositions();
     if (blanks.size() == 0) {
         // The board is a solution, no need to go on with the search.
@@ -204,12 +209,14 @@ void Solver::searchSolutions(const Board &board,
     if (minSize == Board::MAX_VAL + 1) {
         // There's at least one blank position for which there's no option value
         // - the board is not solvable.
+        unsolvablesFound++;
         if (level == 0) {
             _asyncSolvingActive = false;
             _asyncSolvingCancelled = false;
             if (fnFinished != nullptr) {
                 fnFinished(SolverResult::HasNoSolution, vector<Board>());
             }
+            unsolvablesFound = 0;
         }
         return;
     }
@@ -226,6 +233,7 @@ void Solver::searchSolutions(const Board &board,
             // inital search node).
             if (fnProgress != nullptr) {
                 fnProgress(((i + 1.0) / possVals.size()) * 100.0,
+                           unsolvablesFound,
                            static_cast<unsigned>(solutions->size()));
             }
         }
@@ -245,6 +253,7 @@ void Solver::searchSolutions(const Board &board,
                 fnFinished(SolverResult::NoError, vb);
             }
         }
+        unsolvablesFound = 0;
     }
 }
 
