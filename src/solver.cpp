@@ -159,6 +159,7 @@ void Solver::searchSolutions(const Board &board,
                              const shared_ptr<vector<Board>> solutions,
                              unsigned maxSolutions, unsigned level) {
     static unsigned unsolvablesFound = 0;
+    static double progressPercent = 0.0;
     auto blanks = board.getBlankPositions();
     if (blanks.size() == 0) {
         // The board is a solution, no need to go on with the search.
@@ -178,6 +179,7 @@ void Solver::searchSolutions(const Board &board,
                 vector<Board> vb(solutions->cbegin(), solutions->cend());
                 fnFinished(SolverResult::AsyncSolvingCancelled, vb);
             }
+            unsolvablesFound = 0;
         }
         return;
     }
@@ -192,6 +194,7 @@ void Solver::searchSolutions(const Board &board,
                 vector<Board> vb(solutions->cbegin(), solutions->cend());
                 fnFinished(SolverResult::NoError, vb);
             }
+            unsolvablesFound = 0;
         }
         return;
     }
@@ -228,14 +231,14 @@ void Solver::searchSolutions(const Board &board,
                              blanks[possValIdx].second, possVals[i]);
         if (level == 0) {
             // When at first level (searching with the original board
-            // puzzle), report progress (a rough aproximation based on the
+            // puzzle), update progress (a rough aproximation based on the
             // progress of depth first searches for each possible value at the
             // inital search node).
-            if (fnProgress != nullptr) {
-                fnProgress(((i + 1.0) / possVals.size()) * 100.0,
-                           unsolvablesFound,
-                           static_cast<unsigned>(solutions->size()));
-            }
+            progressPercent = ((i + 1.0) / possVals.size()) * 100.0;
+        }
+        if (fnProgress != nullptr) {
+            fnProgress(progressPercent, unsolvablesFound,
+                       static_cast<unsigned>(solutions->size()));
         }
         searchSolutions(nextBoard, fnProgress, fnFinished, solutions,
                         maxSolutions, level + 1);
