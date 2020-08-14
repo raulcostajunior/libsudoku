@@ -200,7 +200,7 @@ void Solver::searchSolutions(const Board &board,
     }
     // Selects the position with least possible values to be the one that
     // will be filled next.
-    int minSize = Board::MAX_VAL + 1;
+    size_t minSize = Board::MAX_VAL + 1;
     int possValIdx = -1;
     for (size_t j = 0; j < possibleValues.size(); j++) {
         if (possibleValues[j].size() > 0 &&
