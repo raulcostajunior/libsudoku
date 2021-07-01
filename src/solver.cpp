@@ -205,7 +205,7 @@ void Solver::searchSolutions(const Board &board,
     for (size_t j = 0; j < possibleValues.size(); j++) {
         if (possibleValues[j].size() > 0 &&
             possibleValues[j].size() < minSize) {
-            possValIdx = j;
+            possValIdx = static_cast<int>(j);
             minSize = possibleValues[j].size();
         }
     }
