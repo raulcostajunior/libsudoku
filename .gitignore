@@ -48,6 +48,8 @@ build_release/
 
 # VSCode specific settings
 .vscode
+.vs
+CppProperties.json
 
 # clangd specific
 .clangd/
