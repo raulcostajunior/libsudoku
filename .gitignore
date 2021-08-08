@@ -49,5 +49,8 @@ build_release/
 # VSCode specific settings
 .vscode
 
+# CLion specific
+.idea
+
 # clangd specific
 .clangd/
