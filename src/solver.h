@@ -30,7 +30,7 @@ using SolverProgressCallback = std::function<void(
 
 // Signature of callback to report result of an async solving process.
 using SolverFinishedCallback = std::function<void(
-    SolverResult /* result */, std::vector<Board> /* solvedBoards */)>;
+    SolverResult /* result */, const std::vector<Board>& /* solvedBoards */)>;
 
 class Solver {
    public:
@@ -39,15 +39,15 @@ class Solver {
     ~Solver();
 
     /**
-     * Solves a Sudoku puzzle in a given board, if it is solvable.
+     * Solves a Sudoku puzzle in a given solverResult, if it is solvable.
      *
-     * @param board the board with the puzzle to be solved.
+     * @param solverResult the solverResult with the puzzle to be solved.
      *
-     * @param solvedBoard the board with the solution found for the puzzle.
+     * @param solvedBoard the solverResult with the solution found for the puzzle.
      *
      * @return a SolverResult indicating the result of the operation.
      */
-    SolverResult solve(const Board &board, Board &solvedBoard);
+    SolverResult solve(const Board &solverResult, Board &solvedBoard);
 
     /**
      * Solves a Sudoku puzzle in a given board, if it is solvable, using a
@@ -117,7 +117,7 @@ class Solver {
      * indicates that the board is not solvable and indicate the reason
      * why the board cannot be solved.
      */
-    SolverResult checkBoard(const Board &board);
+    static SolverResult checkBoard(const Board &board);
 
     // Internal method that does the real work for finding the solutions
     // to a given board. "level"
@@ -145,7 +145,7 @@ class Solver {
     void searchSolutions(const Board &board,
                          const SolverProgressCallback &fnProgress,
                          const SolverFinishedCallback &fnFinished,
-                         const std::shared_ptr<std::vector<Board>> solutions,
+                         const std::shared_ptr<std::vector<Board>>& solutions,
                          unsigned maxSolutions, unsigned level);
 
     std::atomic<bool> _asyncSolvingCancelled;

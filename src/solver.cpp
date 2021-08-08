@@ -10,8 +10,16 @@
 
 #include "board.h"
 
-using namespace sudoku;
-using namespace std;
+using sudoku::Board;
+using sudoku::Solver;
+using sudoku::SolverResult;
+using std::make_pair;
+using std::pair;
+using std::make_shared;
+using std::set;
+using std::shared_ptr;
+using std::vector;
+using std::unordered_set;
 
 Solver::Solver() : _asyncSolvingCancelled(false), _asyncSolvingActive(false) {}
 
@@ -59,8 +67,8 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
     auto solutions = make_shared<vector<Board>>(vector<Board>());
     searchSolutions(
         board, nullptr,
-        [&result](SolverResult solvRes, vector<Board>) {
-            result = solvRes;
+        [&result](SolverResult solverResult, const vector<Board>&) {
+            result = solverResult;
             // Ignore the vector of solutions passed as an argument to the
             // callback. The vector of solutions will be pointed by the
             // shared_ptr passed as the next argument to searchSolutions. The
@@ -70,7 +78,7 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
             // thread.
         },
         solutions, 1, 0);
-    if (solutions->size() > 0) {
+    if (!solutions->empty()) {
         solvedBoard = (*solutions)[0];
     }
     return result;
@@ -99,7 +107,7 @@ SolverResult Solver::solve(const Board &board,
     for (uint8_t lin = 0; lin < 9; lin++) {
         for (uint8_t col = 0; col < 9; col++) {
             if (board.valueAt(lin, col) == 0) {
-                emptyCells.push_back(make_pair(lin, col));
+                emptyCells.emplace_back(lin, col);
             }
         }
     }
@@ -135,7 +143,7 @@ SolverResult Solver::solve(const Board &board,
         if (currCellSolved) {
             currCellPos++;
         } else {
-            // currCellVal >= 9 - have to rollback to the previous cell, if
+            // currCellVal >= 9 - have to roll back to the previous cell, if
             // possible.
             if (currCellPos > 0) {
                 // Resets the current cell before rolling back.
@@ -148,28 +156,28 @@ SolverResult Solver::solve(const Board &board,
     }
     if (boardUnsolvable) {
         return SolverResult::HasNoSolution;
-    } else {
-        return SolverResult::NoError;
     }
+    return SolverResult::NoError;
 }
 
 void Solver::searchSolutions(const Board &board,
                              const SolverProgressCallback &fnProgress,
                              const SolverFinishedCallback &fnFinished,
-                             const shared_ptr<vector<Board>> solutions,
+                             const shared_ptr<vector<Board>>& solutions,
                              unsigned maxSolutions, unsigned level) {
     static unsigned unsolvablesFound = 0;
     static double progressPercent = 0.0;
     auto blanks = board.getBlankPositions();
-    if (blanks.size() == 0) {
+    if (blanks.empty()) {
         // The board is a solution, no need to go on with the search.
         solutions->push_back(board);
         return;
     }
     vector<set<uint8_t>> possibleValues;
-    for (size_t i = 0; i < blanks.size(); i++) {
+    possibleValues.reserve(blanks.size());
+    for (auto & blank : blanks) {
         possibleValues.emplace_back(
-            board.getPossibleValues(blanks[i].first, blanks[i].second));
+            board.getPossibleValues(blank.first, blank.second));
     }
     if (_asyncSolvingCancelled) {
         if (level == 0) {
@@ -179,7 +187,6 @@ void Solver::searchSolutions(const Board &board,
                 vector<Board> vb(solutions->cbegin(), solutions->cend());
                 fnFinished(SolverResult::AsyncSolvingCancelled, vb);
             }
-            unsolvablesFound = 0;
         }
         return;
     }
@@ -194,32 +201,29 @@ void Solver::searchSolutions(const Board &board,
                 vector<Board> vb(solutions->cbegin(), solutions->cend());
                 fnFinished(SolverResult::NoError, vb);
             }
-            unsolvablesFound = 0;
         }
         return;
     }
-    // Selects the position with least possible values to be the one that
+    // Selects the position with the least possible values to be the one that
     // will be filled next.
     size_t minSize = Board::MAX_VAL + 1;
     int possValIdx = -1;
     for (size_t j = 0; j < possibleValues.size(); j++) {
-        if (possibleValues[j].size() > 0 &&
+        if (!possibleValues[j].empty() &&
             possibleValues[j].size() < minSize) {
-            possValIdx = j;
+            possValIdx = static_cast<int>(j);
             minSize = possibleValues[j].size();
         }
     }
     if (minSize == Board::MAX_VAL + 1) {
         // There's at least one blank position for which there's no option value
         // - the board is not solvable.
-        unsolvablesFound++;
         if (level == 0) {
             _asyncSolvingActive = false;
             _asyncSolvingCancelled = false;
             if (fnFinished != nullptr) {
                 fnFinished(SolverResult::HasNoSolution, vector<Board>());
             }
-            unsolvablesFound = 0;
         }
         return;
     }
@@ -231,10 +235,12 @@ void Solver::searchSolutions(const Board &board,
                              blanks[possValIdx].second, possVals[i]);
         if (level == 0) {
             // When at first level (searching with the original board
-            // puzzle), update progress (a rough aproximation based on the
+            // puzzle), update progress (a rough approximation based on the
             // progress of depth first searches for each possible value at the
-            // inital search node).
-            progressPercent = ((i + 1.0) / possVals.size()) * 100.0;
+            // initial search node).
+            progressPercent =
+                ((static_cast<double>(i) + 1.0) /
+                  static_cast<double>(possVals.size())) * 100.0;
         }
         if (fnProgress != nullptr) {
             fnProgress(progressPercent, unsolvablesFound,
@@ -250,13 +256,12 @@ void Solver::searchSolutions(const Board &board,
 
         if (fnFinished != nullptr) {
             vector<Board> vb(solutions->cbegin(), solutions->cend());
-            if (solutions->size() < 1) {
+            if (solutions->empty()) {
                 fnFinished(SolverResult::HasNoSolution, vb);
             } else {
                 fnFinished(SolverResult::NoError, vb);
             }
         }
-        unsolvablesFound = 0;
     }
 }
 
