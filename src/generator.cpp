@@ -178,11 +178,10 @@ void Generator::generate(PuzzleDifficulty difficulty,
 
     // Initializes the generated board with a random value at a random position.
     Board genBoard;
-    uint8_t initPosition = randEngine() % Board::NUM_POS;
-    size_t candPosition = randEngine() % candidates.size();
-    genBoard.setValueAt(initPosition / Board::NUM_COLS,
-                        initPosition % Board::NUM_COLS,
-                        candidates[candPosition]);
+    uint8_t initialPos = randEngine() % Board::NUM_POS;
+    size_t candidatePos = randEngine() % candidates.size();
+    genBoard.setValueAt(initialPos / Board::NUM_COLS,
+                        initialPos % Board::NUM_COLS, candidates[candidatePos]);
     if (processGenCancelled(fnFinished)) {
         return;
     }
