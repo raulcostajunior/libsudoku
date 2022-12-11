@@ -14,7 +14,8 @@
 using namespace sudoku;
 using namespace std;
 
-static int _timeoutSecs = 1800;
+const int timeoutSecs = 1800;
+const int maxBoardSolutions = 10'000;
 
 // clang-format off
 
@@ -89,20 +90,6 @@ const Board solvable_one_solution (
     }
 );
 
-const Board solvable_two_solutions (
-    {
-        0, 9, 5, 7, 4, 3, 0, 6, 1,
-        4, 3, 1, 8, 6, 5, 0, 0, 0,
-        8, 0, 6, 1, 9, 2, 5, 4, 3,
-        3, 8, 7, 4, 0, 0, 2, 1, 6,
-        6, 1, 2, 3, 8, 7, 4, 0, 0,
-        5, 4, 9, 2, 1, 6, 7, 3, 0,
-        0, 6, 3, 5, 0, 4, 1, 0, 0,
-        9, 0, 8, 6, 0, 1, 3, 5, 4,
-        1, 5, 4, 9, 3, 8, 6, 0, 0,
-    }
-);
-
 const Board solvable_three_solutions (
     {
         0, 7, 5, 8, 4, 6, 1, 0, 0,
@@ -134,21 +121,21 @@ const Board solvable_many_solutions (
 // clang-format on
 
 SolverResult solveForGood(const Board &board, vector<Board> &solutions,
-                          unsigned limit = 10000) {
-    SolverResult result;
+                          unsigned limit = maxBoardSolutions) {
+    SolverResult result{SolverResult::NoError};
     atomic<bool> finished{false};
     atomic<unsigned> solutionsFound(0u);
     atomic<unsigned> unsolvablesFound(0u);
     atomic<double> progressPercent(0.0);
     Solver solver;
 
-    auto currentPrecision = clog.precision();
+    std::streamsize currentPrecision = clog.precision();
 
     clog << fixed << setprecision(2);
 
     auto asyncSolveProgress =
         [&progressPercent, &unsolvablesFound, &solutionsFound](
-            double progress, unsigned unsolvables, unsigned solutions) {
+            double progress, unsigned unsolvables, unsigned solutions) { // NOLINT(bugprone-easily-swappable-parameters)
             progressPercent = progress;
             unsolvablesFound = unsolvables;
             solutionsFound = solutions;
@@ -164,7 +151,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
         if (solverResult == SolverResult::AsyncSolvingCancelled) {
             clog << "\n... AsyncSolve cancelled - timeout "
                     "after running for "
-                 << _timeoutSecs << " seconds." << endl;
+                 << timeoutSecs << " seconds." << endl;
         } else if (solverResult == SolverResult::NoError) {
             clog << "\n.... AsyncSolve at 100.00%: " << solvedBoards.size()
                  << " solution(s) found." << endl;
@@ -179,8 +166,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
 
     // Prints out progress with "Poor's man animation".
     int numOfWaits = 0;
-    string animPattern[4]{".   ", " .  ", "  . ", "   ."};
-    while (!finished && numOfWaits < _timeoutSecs) {
+    vector<string> animPattern{".   ", " .  ", "  . ", "   ."};
+    while (!finished && numOfWaits < timeoutSecs) {
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
         if (numOfWaits > 1 && progressPercent < 100.0) {
@@ -191,7 +178,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
         }
     }
 
-    if (numOfWaits >= _timeoutSecs) {
+    if (numOfWaits >= timeoutSecs) {
         // Timed-out: cancel
         solver.cancelAsyncSolving();
         // Sleeps a while so the solver has enough time to call the
@@ -200,7 +187,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
         this_thread::sleep_for(chrono::seconds(1));
     }
 
-    clog << defaultfloat << setprecision(currentPrecision);
+    clog << fixed << setprecision(static_cast<int>(currentPrecision));
 
     return result;
 }
@@ -275,8 +262,8 @@ TEST_CASE("All solutions found by asyncSolveForGood are valid") {
     clog << "Will verify all " << solved_boards.size() << " solutions." << endl;
 
     REQUIRE(result == SolverResult::NoError);
-    for (size_t i = 0; i < solved_boards.size(); i++) {
-        REQUIRE(solved_boards[i].isComplete());
+    for (Board &solved_board : solved_boards) {
+        REQUIRE(solved_board.isComplete());
     }
 }
 
@@ -286,14 +273,13 @@ TEST_CASE(
 
     // Finds the total number of solutions for the board with no specified
     // limits.
-    auto result = solveForGood(solvable_many_solutions, solved_boards);
+    solveForGood(solvable_many_solutions, solved_boards);
 
     size_t totalOfSolutions = solved_boards.size();
     solved_boards.clear();
 
     // Searches for solutions with a limit inferior to the already known total.
-    result = solveForGood(solvable_many_solutions, solved_boards,
-                          totalOfSolutions - 1);
+    solveForGood(solvable_many_solutions, solved_boards, totalOfSolutions - 1);
     REQUIRE(solved_boards.size() == totalOfSolutions - 1);
 }
 

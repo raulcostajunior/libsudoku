@@ -40,9 +40,9 @@ uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept {
 uint8_t Board::blankPositionCount() const noexcept {
     uint8_t nBlanks = 0;
 
-    for (uint8_t lin = 0; lin < Board::NUM_ROWS; lin++) {
+    for (auto _value : _values) {
         for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
-            if (_values[lin][col] == 0) {
+            if (_value[col] == 0) {
                 nBlanks++;
             }
         }
@@ -81,8 +81,8 @@ SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value) {
     }
 }
 
-set<uint8_t> Board::getPossibleValues(uint8_t line, uint8_t column) const
-    noexcept {
+set<uint8_t> Board::getPossibleValues(uint8_t line,
+                                      uint8_t column) const noexcept {
     set<uint8_t> pvs;
     if (_values[line][column] == 0) {
         // Position is empty - can go ahead and search for possible values.
