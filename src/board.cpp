@@ -187,19 +187,19 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
         // Values already found in the section.
         // Stores the position of the value and if it has been
         // already found to be repeated.
-        // The order of the data in the tuples of secVals is:
+        // The order of the data in the tuples of secValues is:
         //     0 - the value;
         //     1 - the line of the value's first occurrence;
         //     2 - the column of the value's first occurrence;
         //     3 - has the value repeated at least once?
-        // The value will be store in secVals only at the time
+        // The value will be store in secValues only at the time
         // it's first found on the section. More than two
         // occurrences of the value can happen; to avoid multiple
         // inclusions of the first occurrence for such cases, the
         // first occurrence of the values in the section are inserted
         // at the end of the section run for those values that had
         // at least one repetition.
-        vector<tuple<uint8_t, uint8_t, uint8_t, bool>> secVals;
+        vector<tuple<uint8_t, uint8_t, uint8_t, bool>> secValues;
 
         for (uint8_t lin = initialLin; lin < initialLin + 3; lin++) {
             for (uint8_t col = initialCol; col < initialCol + 3; col++) {
@@ -208,26 +208,26 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                     // Value is not blank; check if it has already happened
                     // in section.
                     bool isFirstOccurrence = true;
-                    for (size_t i = 0; i < secVals.size(); i++) {
-                        if (get<0>(secVals[i]) == val) {
+                    for (size_t i = 0; i < secValues.size(); i++) {
+                        if (get<0>(secValues[i]) == val) {
                             // Value is repeated in the section.
                             invalidPositions.push_back(make_pair(lin, col));
                             if (stopAtFirst) return invalidPositions;
-                            get<3>(secVals[i]) = true;
+                            get<3>(secValues[i]) = true;
                             isFirstOccurrence = false;
                         }
                     }
                     if (isFirstOccurrence) {
                         // Registers the first occurrence of the value in
                         // the section.
-                        secVals.push_back(make_tuple(val, lin, col, false));
+                        secValues.push_back(make_tuple(val, lin, col, false));
                     }
                 }
             }
         }
         // Registers the first occurrences of repeated values in the
         // section.
-        for (const auto &secVal : secVals) {
+        for (const auto &secVal : secValues) {
             if (get<3>(secVal)) {
                 invalidPositions.push_back(
                     make_pair(get<1>(secVal), get<2>(secVal)));
