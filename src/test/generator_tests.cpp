@@ -13,11 +13,12 @@
 using namespace sudoku;
 using namespace std;
 
-static unsigned _timeoutSecs = 1200u;
+static const unsigned TIMEOUT_SECS = 1200u;
+static const unsigned POLL_INTERVAL_RESULT_MILLI = 1000u;
 
 GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard,
                          unsigned timeoutSecs) {
-    GeneratorResult result;
+    GeneratorResult result = GeneratorResult::NoError;
     atomic<bool> finished{false};
     Generator gen;
 
@@ -72,7 +73,7 @@ GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard,
 TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
     Board genBoard;
 
-    auto resultGen = generate(PuzzleDifficulty::Easy, genBoard, _timeoutSecs);
+    auto resultGen = generate(PuzzleDifficulty::Easy, genBoard, TIMEOUT_SECS);
     REQUIRE(resultGen == GeneratorResult::NoError);
     REQUIRE(genBoard.isValid());
 
@@ -86,7 +87,7 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
     REQUIRE(solvedBoard.isComplete());
 
     vector<Board> genBoardSolutions;
-    SolverResult resultSolveAll;
+    SolverResult resultSolveAll = SolverResult::NoError;
     resultSolveAll = solver.asyncSolveForGood(
         genBoard, nullptr,
         [&resultSolveAll, &genBoardSolutions](SolverResult result,
@@ -97,7 +98,7 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
         2);
     while (resultSolveAll != SolverResult::NoError &&
            resultSolveAll != SolverResult::AsyncSolvingCancelled) {
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        this_thread::sleep_for(chrono::milliseconds(POLL_INTERVAL_RESULT_MILLI));
     }
     clog << "Number of solutions for generated board: "
          << genBoardSolutions.size() << endl;
@@ -110,7 +111,7 @@ TEST_CASE("asyncGenerate can generate solvable EASY puzzle") {
 TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
     Board genBoard;
 
-    auto resultGen = generate(PuzzleDifficulty::Medium, genBoard, _timeoutSecs);
+    auto resultGen = generate(PuzzleDifficulty::Medium, genBoard, TIMEOUT_SECS);
     REQUIRE(resultGen == GeneratorResult::NoError);
     REQUIRE(genBoard.isValid());
 
@@ -126,7 +127,7 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
     REQUIRE(solvedBoard.isComplete());
 
     vector<Board> genBoardSolutions;
-    SolverResult resultSolveAll;
+    SolverResult resultSolveAll = SolverResult::NoError;
     resultSolveAll = solver.asyncSolveForGood(
         genBoard, nullptr,
         [&resultSolveAll, &genBoardSolutions](SolverResult result,
@@ -137,7 +138,7 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
         2);
     while (resultSolveAll != SolverResult::NoError &&
            resultSolveAll != SolverResult::AsyncSolvingCancelled) {
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        this_thread::sleep_for(chrono::milliseconds(POLL_INTERVAL_RESULT_MILLI));
     }
     clog << "Number of solutions for generated board: "
          << genBoardSolutions.size() << endl;
@@ -150,7 +151,7 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
 TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
     Board genBoard;
 
-    auto resultGen = generate(PuzzleDifficulty::Hard, genBoard, _timeoutSecs);
+    auto resultGen = generate(PuzzleDifficulty::Hard, genBoard, TIMEOUT_SECS);
     REQUIRE(resultGen == GeneratorResult::NoError);
     REQUIRE(genBoard.isValid());
 
@@ -164,7 +165,7 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
     REQUIRE(solvedBoard.isComplete());
 
     vector<Board> genBoardSolutions;
-    SolverResult resultSolveAll;
+    SolverResult resultSolveAll = SolverResult::NoError;
     resultSolveAll = solver.asyncSolveForGood(
         genBoard, nullptr,
         [&resultSolveAll, &genBoardSolutions](SolverResult result,
@@ -175,7 +176,7 @@ TEST_CASE("asyncGenerate can generate solvable HARD puzzle") {
         2);
     while (resultSolveAll != SolverResult::NoError &&
            resultSolveAll != SolverResult::AsyncSolvingCancelled) {
-        this_thread::sleep_for(chrono::milliseconds(1000));
+        this_thread::sleep_for(chrono::milliseconds(POLL_INTERVAL_RESULT_MILLI));
     }
     clog << "Number of solutions for generated board: "
          << genBoardSolutions.size() << endl;

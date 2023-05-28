@@ -126,14 +126,14 @@ TEST_CASE("Board with value out of range is invalid") {
 
 TEST_CASE("Board with value repeated in line / column is invalid") {
     REQUIRE(!invalid_board_col_line.isValid());
-    const auto invalidPos = invalid_board_col_line.getInvalidPositions();
+    const auto invalidPositions = invalid_board_col_line.getInvalidPositions();
     // The repeated positions are commented in front of the board initialization
     // vector. There are 16 repetitions - 4 in column 3, 2 in column 4, 2 in
     // column 5, 4 in column 6, 2 in column 7 and 2 in column 8.
-    REQUIRE(invalidPos.size() == 16);
+    REQUIRE(invalidPositions.size() == 16);
     std::vector<int> invalidsPerCol(9);
-    for (size_t i = 0; i < invalidPos.size(); i++) {
-        invalidsPerCol[invalidPos[i].second]++;
+    for (const std::pair<uint8_t,uint8_t>& invalidPos:invalidPositions) {
+        invalidsPerCol[invalidPos.second]++;
     }
     REQUIRE(invalidsPerCol[3] == 4);
     REQUIRE(invalidsPerCol[4] == 2);
@@ -145,12 +145,12 @@ TEST_CASE("Board with value repeated in line / column is invalid") {
 
 TEST_CASE("Board with value repeated in section is invalid") {
     REQUIRE(!invalid_board_section.isValid());
-    const auto invalidPos = invalid_board_section.getInvalidPositions();
-    REQUIRE(invalidPos.size() == 6);
+    const auto invalidPositions = invalid_board_section.getInvalidPositions();
+    REQUIRE(invalidPositions.size() == 6);
     // All the invalid repeated values should be either '2' or '3'.
-    for (size_t i = 0; i < invalidPos.size(); i++) {
-        int repVal = invalid_board_section.valueAt(invalidPos[i].first,
-                                                   invalidPos[i].second);
+    for(const std::pair<uint8_t, uint8_t>& invalidPos:invalidPositions) {
+        int repVal = invalid_board_section.valueAt(invalidPos.first,
+                                                   invalidPos.second);
         REQUIRE((repVal == 2 || repVal == 3));
     }
 }
@@ -180,7 +180,7 @@ TEST_CASE("Board copy generates equal boards") {
 
 TEST_CASE("Set value with out-of-range value is rejected") {
     Board board(board_with_blanks);
-    auto result = board.setValueAt(0, 0, 12);
+    auto result = board.setValueAt(0, 0, 12);  // NOLINT(cppcoreguidelines-avoid-magic-numbers)
     REQUIRE((result == SetValueResult::InvalidValue));
     REQUIRE(board == board_with_blanks);  // Board has not been changed.
 }
