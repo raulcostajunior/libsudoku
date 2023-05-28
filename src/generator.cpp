@@ -1,11 +1,7 @@
 #include "generator.h"
 
-#include <algorithm>
 #include <atomic>
 #include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <ctime>
 #include <functional>
 #include <limits>
 #include <map>
@@ -84,12 +80,11 @@ pair<uint8_t, uint8_t> getLessFreqVariation(const vector<Board> &boards) {
         int minFreq = numeric_limits<int>::max();
         uint8_t minFreqValue = 0;
         int totalFreq = 0;
-        for (auto it = valuesDistrib[pos].cbegin();
-             it != valuesDistrib[pos].cend(); it++) {
-            totalFreq += it->second;
-            if (it->second < minFreq) {
-                minFreq = it->second;
-                minFreqValue = it->first;
+        for (auto it : valuesDistrib[pos]) {
+            totalFreq += it.second;
+            if (it.second < minFreq) {
+                minFreq = it.second;
+                minFreqValue = it.first;
             }
         }
         if (totalFreq - minFreq > maxDist) {
@@ -123,10 +118,8 @@ uint8_t Generator::maxEmptyPositions(PuzzleDifficulty difficulty) noexcept {
     switch (difficulty) {
         case PuzzleDifficulty::Hard:
             return MAX_HARD;
-            break;
         case PuzzleDifficulty::Medium:
             return MAX_MEDIUM;
-            break;
         default:
             return MAX_EASY;
     }

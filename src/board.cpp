@@ -1,8 +1,6 @@
 #include "board.h"
 
 #include <algorithm>
-#include <cstdint>
-#include <initializer_list>
 #include <iostream>
 #include <set>
 #include <tuple>
@@ -89,9 +87,9 @@ set<uint8_t> Board::getPossibleValues(uint8_t line, uint8_t column) const {
         for (const auto &_valueInRow : _values[line]) {
             pvs.erase(_valueInRow);
         }
-        size_t i = 0u;
-        while(i < Board::NUM_ROWS) {
-            pvs.erase(_values[i++][column]);
+        size_t r = 0u;
+        while(r < Board::NUM_ROWS) {
+            pvs.erase(_values[r++][column]);
         }
         const auto initLine = static_cast<size_t>(line) / 3 * 3;
         const auto initColumn = static_cast<size_t>(column) / 3 * 3;
