@@ -63,7 +63,7 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
         // Board is not solvable.
         return solvable;
     }
-    SolverResult result;
+    SolverResult result = SolverResult::NoError;
     auto solutions = make_shared<vector<Board>>(vector<Board>());
     searchSolutions(
         board, nullptr,

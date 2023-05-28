@@ -61,20 +61,20 @@ pair<uint8_t, uint8_t> getLessFreqVariation(const vector<Board> &boards) {
     // the boards in the collection.
     using valuesFreqs = map<uint8_t, uint8_t>;
     vector<valuesFreqs> valuesDistrib(Board::NUM_POS, valuesFreqs());
-    for (size_t nBoard = 0; nBoard < boards.size(); nBoard++) {
+    for (const auto& board:boards) {
         for (uint8_t row = 0; row < Board::NUM_ROWS; row++) {
             for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
-                const uint8_t pos =
+                const auto pos =
                     static_cast<uint8_t>(row * Board::NUM_COLS + col);
-                valuesDistrib[pos][boards[nBoard].valueAt(row, col)] += 1;
+                valuesDistrib[pos][board.valueAt(row, col)] += 1;
             }
         }
     }
     // Sweeps all the frequencies looking for the less frequent value in a
     // position that has the biggest distance between the less frequent value
     // frequency and the accumulated frequencies for that position.
-    uint8_t lfvPosition;
-    uint8_t lfvValue;
+    uint8_t lfvPosition = 0;
+    uint8_t lfvValue = 0;
     int maxDist = 0;
     for (size_t pos = 0; pos < Board::NUM_POS; pos++) {
         if (valuesDistrib[pos].size() < 2) {
@@ -116,19 +116,20 @@ Generator::~Generator() {
 }
 
 uint8_t Generator::maxEmptyPositions(PuzzleDifficulty difficulty) noexcept {
-    uint8_t max;
+    static const uint8_t MAX_HARD = 58;
+    static const uint8_t MAX_MEDIUM = 48;
+    static const uint8_t MAX_EASY = 34;
 
     switch (difficulty) {
         case PuzzleDifficulty::Hard:
-            max = 58;
+            return MAX_HARD;
             break;
         case PuzzleDifficulty::Medium:
-            max = 48;
+            return MAX_MEDIUM;
             break;
-        default:  // EASY
-            max = 34;
+        default:
+            return MAX_EASY;
     }
-    return max;
 }
 
 GeneratorResult Generator::asyncGenerate(
@@ -151,6 +152,7 @@ GeneratorResult Generator::asyncGenerate(
 void Generator::generate(PuzzleDifficulty difficulty,
                          const GeneratorProgressCallback &fnProgress,
                          const GeneratorFinishedCallback &fnFinished) {
+    static const unsigned long long POLL_INTERVAL_SOLVE_MILLI = 100;
     random_device randDev;
     mt19937 randEngine(randDev());
 
@@ -225,7 +227,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
 
     // The positions will be optimally set to reduce the board solution set as
     // fast as possible.
-    do {
+    while (true) {
         vector<Board> boardSolutions;
         atomic<bool> solvingFinished(false);
         atomic<bool> solvingCancelled(false);
@@ -247,7 +249,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
                 }
             },
             [&boardSolutions, &solvingFinished](SolverResult,
-                                                vector<Board> solutions) {
+                                                const vector<Board>& solutions) {
                 // Async solving finished - as we departed from a valid and
                 // solvable board there's no need to test for SolverResult
                 // value.
@@ -258,7 +260,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
 
         // Waits for the async search for solutions to finish.
         while (!solvingFinished && !solvingCancelled) {
-            this_thread::sleep_for(chrono::milliseconds(100));
+            this_thread::sleep_for(chrono::milliseconds(POLL_INTERVAL_SOLVE_MILLI));
         }
 
         if (boardSolutions.size() == 1) {
@@ -275,7 +277,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
             genBoard.setValueAt(lfvRow, lfvCol, lessFreqVariation.first);
         }
 
-    } while (true);
+    } // while (true);
 
     _asyncGenActive = false;
     _asyncGenCancelled = false;

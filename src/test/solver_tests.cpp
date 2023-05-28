@@ -275,11 +275,11 @@ TEST_CASE(
     // limits.
     solveForGood(solvable_many_solutions, solved_boards);
 
-    size_t totalOfSolutions = solved_boards.size();
+    const auto totalOfSolutions = static_cast<unsigned int>(solved_boards.size());
     solved_boards.clear();
 
     // Searches for solutions with a limit inferior to the already known total.
-    solveForGood(solvable_many_solutions, solved_boards, totalOfSolutions - 1);
+    solveForGood(solvable_many_solutions, solved_boards, totalOfSolutions - 1u);
     REQUIRE(solved_boards.size() == totalOfSolutions - 1);
 }
 

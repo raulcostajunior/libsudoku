@@ -67,8 +67,7 @@ class Board {
      * position is not empty, an empty set is returned.
      */
     std::set<std::uint8_t> getPossibleValues(std::uint8_t line,
-                                             std::uint8_t column) const
-        noexcept;
+                                             std::uint8_t column) const;
 
     /**
      * @brief Clears the board by assigning the value 0 to all its positions.
@@ -83,7 +82,7 @@ class Board {
      * the values are in the appropriate range (between 0 and 9  - 0 being the
      * value for empty positions).
      */
-    bool isValid() const noexcept;
+    bool isValid() const;
 
     /**
      * @brief Returns the board positions that contains invalid values - either
@@ -94,7 +93,7 @@ class Board {
      * line as first and column as second.
      */
     std::vector<std::pair<std::uint8_t, std::uint8_t>> getInvalidPositions()
-        const noexcept;
+        const;
 
     /**
      * Returns true if all the positions in the board are blank (equal to 0).
@@ -113,14 +112,13 @@ class Board {
      * @return Vector with each blank position as a pair of (row, col)
      * coordinates.
      */
-    std::vector<std::pair<std::uint8_t, std::uint8_t>> getBlankPositions() const
-        noexcept;
+    std::vector<std::pair<std::uint8_t, std::uint8_t>> getBlankPositions() const;
 
     /**
      * Returns true if a board has no blank position and is valid -
      * in other words, the board corresponds to a solved puzzle.
      */
-    bool isComplete() const noexcept;
+    bool isComplete() const;
 
     bool operator==(const Board &board) const noexcept;
 
@@ -141,7 +139,7 @@ class Board {
     // clang-format on
 
     std::vector<std::pair<std::uint8_t, std::uint8_t>> findInvalidPositions(
-        bool stopAtFirst) const noexcept;
+        bool stopAtFirst) const;
 };
 
 }  // namespace sudoku

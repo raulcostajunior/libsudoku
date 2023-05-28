@@ -40,9 +40,9 @@ uint8_t Board::valueAt(uint8_t line, uint8_t column) const noexcept {
 uint8_t Board::blankPositionCount() const noexcept {
     uint8_t nBlanks = 0;
 
-    for (auto _value : _values) {
-        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
-            if (_value[col] == 0) {
+    for (const auto &_row : _values) {
+        for (const auto &_value : _row) {
+            if (_value == 0) {
                 nBlanks++;
             }
         }
@@ -51,13 +51,13 @@ uint8_t Board::blankPositionCount() const noexcept {
     return nBlanks;
 }
 
-vector<pair<uint8_t, uint8_t>> Board::getBlankPositions() const noexcept {
+vector<pair<uint8_t, uint8_t>> Board::getBlankPositions() const {
     vector<pair<uint8_t, uint8_t>> blanks;
 
     for (uint8_t lin = 0; lin < Board::NUM_ROWS; lin++) {
         for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             if (_values[lin][col] == 0) {
-                blanks.emplace_back(make_pair(lin, col));
+                blanks.emplace_back(lin, col);
             }
         }
     }
@@ -81,20 +81,20 @@ SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value) {
     }
 }
 
-set<uint8_t> Board::getPossibleValues(uint8_t line,
-                                      uint8_t column) const noexcept {
+set<uint8_t> Board::getPossibleValues(uint8_t line, uint8_t column) const {
     set<uint8_t> pvs;
     if (_values[line][column] == 0) {
         // Position is empty - can go ahead and search for possible values.
         pvs.insert({1, 2, 3, 4, 5, 6, 7, 8, 9});
-        for (size_t i = 0; i < Board::NUM_COLS; i++) {
-            pvs.erase(_values[line][i]);
+        for (const auto &_valueInRow : _values[line]) {
+            pvs.erase(_valueInRow);
         }
-        for (size_t j = 0; j < Board::NUM_ROWS; j++) {
-            pvs.erase(_values[j][column]);
+        size_t i = 0u;
+        while(i < Board::NUM_ROWS) {
+            pvs.erase(_values[i++][column]);
         }
-        const size_t initLine = line / 3 * 3;
-        const size_t initColumn = column / 3 * 3;
+        const auto initLine = static_cast<size_t>(line) / 3 * 3;
+        const auto initColumn = static_cast<size_t>(column) / 3 * 3;
         for (size_t i = initLine; i < initLine + 3; i++) {
             for (size_t j = initColumn; j < initColumn + 3; j++) {
                 pvs.erase(_values[i][j]);
@@ -105,14 +105,14 @@ set<uint8_t> Board::getPossibleValues(uint8_t line,
 }
 
 void Board::clear() noexcept {
-    for (uint8_t i = 0; i < Board::NUM_ROWS; i++) {
-        for (uint8_t j = 0; j < NUM_COLS; j++) {
-            _values[i][j] = 0;
+    for (auto &_valuesInLine : _values) {
+        for (auto &_value : _valuesInLine) {
+            _value = 0;
         }
     }
 }
 
-bool Board::isValid() const noexcept {
+bool Board::isValid() const {
     // We stop at the first invalid position because that is
     // enough to tell a board is not valid.
     const auto &invalidPositions = findInvalidPositions(true);
@@ -120,19 +120,19 @@ bool Board::isValid() const noexcept {
     return invalidPositions.empty();
 }
 
-vector<pair<uint8_t, uint8_t>> Board::getInvalidPositions() const noexcept {
+vector<pair<uint8_t, uint8_t>> Board::getInvalidPositions() const {
     return findInvalidPositions(false);
 }
 
 vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
-    bool stopAtFirst) const noexcept {
+    bool stopAtFirst) const {
     vector<pair<uint8_t, uint8_t>> invalidPositions;
 
     // Checks if any value is out of the allowed range
     for (uint8_t lin = 0; lin < Board::NUM_ROWS; lin++) {
         for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             if (_values[lin][col] > 9) {
-                invalidPositions.push_back(make_pair(lin, col));
+                invalidPositions.emplace_back(lin, col);
                 if (stopAtFirst) return invalidPositions;
             }
         }
@@ -147,11 +147,11 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                 for (uint8_t pos = col + 1; pos < Board::NUM_COLS; pos++) {
                     if (val == _values[lin][pos]) {
                         // Found a repetition in the line.
-                        invalidPositions.push_back(make_pair(lin, col));
+                        invalidPositions.emplace_back(lin, col);
                         if (stopAtFirst) return invalidPositions;
                         // Also adds the position of the repeated item to
                         // the invalid list.
-                        invalidPositions.push_back(make_pair(lin, pos));
+                        invalidPositions.emplace_back(lin, pos);
                     }
                 }
             }
@@ -167,11 +167,11 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                 for (uint8_t pos = lin + 1; pos < Board::NUM_ROWS; pos++) {
                     if (val == _values[pos][col]) {
                         // Found a repetition in the column.
-                        invalidPositions.push_back(make_pair(lin, col));
+                        invalidPositions.emplace_back(lin, col);
                         if (stopAtFirst) return invalidPositions;
                         // Also adds the position of the repeated item to
                         // the invalid list.
-                        invalidPositions.push_back(make_pair(pos, col));
+                        invalidPositions.emplace_back(pos, col);
                     }
                 }
             }
@@ -208,19 +208,19 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                     // Value is not blank; check if it has already happened
                     // in section.
                     bool isFirstOccurrence = true;
-                    for (size_t i = 0; i < secValues.size(); i++) {
-                        if (get<0>(secValues[i]) == val) {
+                    for (auto &secValue : secValues) {
+                        if (get<0>(secValue) == val) {
                             // Value is repeated in the section.
-                            invalidPositions.push_back(make_pair(lin, col));
+                            invalidPositions.emplace_back(lin, col);
                             if (stopAtFirst) return invalidPositions;
-                            get<3>(secValues[i]) = true;
+                            get<3>(secValue) = true;
                             isFirstOccurrence = false;
                         }
                     }
                     if (isFirstOccurrence) {
                         // Registers the first occurrence of the value in
                         // the section.
-                        secValues.push_back(make_tuple(val, lin, col, false));
+                        secValues.emplace_back(val, lin, col, false);
                     }
                 }
             }
@@ -229,8 +229,7 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
         // section.
         for (const auto &secVal : secValues) {
             if (get<3>(secVal)) {
-                invalidPositions.push_back(
-                    make_pair(get<1>(secVal), get<2>(secVal)));
+                invalidPositions.emplace_back(get<1>(secVal), get<2>(secVal));
                 // No need to test for stopAtFirst - if it was true, this
                 // point would have not been reached.
             }
@@ -270,17 +269,8 @@ bool Board::isEmpty() const noexcept {
     return empty;
 }
 
-bool Board::isComplete() const noexcept {
-    bool anyBlank = false;
-
-    for (uint8_t i = 0; i < Board::NUM_POS; i++) {
-        if (_values[i / Board::NUM_ROWS][i % Board::NUM_COLS] == 0) {
-            anyBlank = true;
-            break;
-        }
-    }
-
-    if (anyBlank) {
+bool Board::isComplete() const {
+    if (blankPositionCount() > 0) {
         return false;
     } else {
         // A board with no blank position is

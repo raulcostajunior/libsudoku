@@ -43,7 +43,7 @@ GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard,
         return result;
     }
 
-    int numOfWaits = 0;
+    unsigned int numOfWaits = 0;
     while (!finished && numOfWaits < timeoutSecs) {
         this_thread::sleep_for(chrono::seconds(1));
         numOfWaits++;
