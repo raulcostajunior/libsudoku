@@ -45,6 +45,8 @@ CTestTestfile.cmake
 build/
 build_debug/
 build_release/
+build_wasm_debug/
+build_wasm_release/
 cmake-build-debug/
 cmake-build-release/
 
