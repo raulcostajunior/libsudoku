@@ -1,6 +1,6 @@
 
 # libsudoku
 
-[![Build Status](https://travis-ci.org/raulcostajunior/libsudoku.svg?branch=master)](https://travis-ci.org/raulcostajunior/libsudoku)
+[![Build and Test Status](https://github.com/raulcostajunior/libsudoku/actions/workflows/cmake.yml/badge.svg)](https://github.com/raulcostajunior/libsudoku/actions/workflows/cmake.yml)
 
 C++ library for generating and solving Sudoku puzzles.
