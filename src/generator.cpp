@@ -57,7 +57,7 @@ pair<uint8_t, uint8_t> getLessFreqVariation(const vector<Board> &boards) {
     // the boards in the collection.
     using valuesFreqs = map<uint8_t, uint8_t>;
     vector<valuesFreqs> valuesDistrib(Board::NUM_POS, valuesFreqs());
-    for (const auto& board:boards) {
+    for (const auto &board : boards) {
         for (uint8_t row = 0; row < Board::NUM_ROWS; row++) {
             for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
                 const auto pos =
@@ -80,11 +80,11 @@ pair<uint8_t, uint8_t> getLessFreqVariation(const vector<Board> &boards) {
         int minFreq = numeric_limits<int>::max();
         uint8_t minFreqValue = 0;
         int totalFreq = 0;
-        for (auto it : valuesDistrib[pos]) {
-            totalFreq += it.second;
-            if (it.second < minFreq) {
-                minFreq = it.second;
-                minFreqValue = it.first;
+        for (auto iter : valuesDistrib[pos]) {
+            totalFreq += iter.second;
+            if (iter.second < minFreq) {
+                minFreq = iter.second;
+                minFreqValue = iter.first;
             }
         }
         if (totalFreq - minFreq > maxDist) {
@@ -187,8 +187,8 @@ void Generator::generate(PuzzleDifficulty difficulty,
     }
     // Solves the genBoard.
     Board solvedGenBoard;
-    Solver solver;
-    solver.solve(genBoard, candidates, solvedGenBoard);
+
+    Solver::solve(genBoard, candidates, solvedGenBoard);
 
     // Removes the maximum number of empty positions for the required difficulty
     // level.
@@ -231,6 +231,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
             return;
         }
 
+        Solver solver;
         solver.asyncSolveForGood(
             genBoard,
             [&solver, &fnFinished, &solvingCancelled, this](double, unsigned,
@@ -241,8 +242,8 @@ void Generator::generate(PuzzleDifficulty difficulty,
                     solvingCancelled = true;
                 }
             },
-            [&boardSolutions, &solvingFinished](SolverResult,
-                                                const vector<Board>& solutions) {
+            [&boardSolutions, &solvingFinished](
+                SolverResult, const vector<Board> &solutions) {
                 // Async solving finished - as we departed from a valid and
                 // solvable board there's no need to test for SolverResult
                 // value.
@@ -253,24 +254,25 @@ void Generator::generate(PuzzleDifficulty difficulty,
 
         // Waits for the async search for solutions to finish.
         while (!solvingFinished && !solvingCancelled) {
-            this_thread::sleep_for(chrono::milliseconds(POLL_INTERVAL_SOLVE_MILLI));
+            this_thread::sleep_for(
+                chrono::milliseconds(POLL_INTERVAL_SOLVE_MILLI));
         }
 
         if (boardSolutions.size() == 1) {
             // Current genBoard only has one solution; it is a valid Sudoku
             // puzzle; leave reduction phase.
             break;
-        } else {
-            // Current genBoard still has more than one solution; continue
-            // reduction of empty positions.
-            const pair<uint8_t, uint8_t> lessFreqVariation =
-                getLessFreqVariation(boardSolutions);
-            const uint8_t lfvRow = lessFreqVariation.second / Board::NUM_COLS;
-            const uint8_t lfvCol = lessFreqVariation.second % Board::NUM_COLS;
-            genBoard.setValueAt(lfvRow, lfvCol, lessFreqVariation.first);
         }
 
-    } // while (true);
+        // Current genBoard still has more than one solution; continue
+        // reduction of empty positions.
+        const pair<uint8_t, uint8_t> lessFreqVariation =
+            getLessFreqVariation(boardSolutions);
+        const uint8_t lfvRow = lessFreqVariation.second / Board::NUM_COLS;
+        const uint8_t lfvCol = lessFreqVariation.second % Board::NUM_COLS;
+        genBoard.setValueAt(lfvRow, lfvCol, lessFreqVariation.first);
+
+    }  // while (true);
 
     _asyncGenActive = false;
     _asyncGenCancelled = false;
@@ -283,6 +285,7 @@ void Generator::cancelAsyncGenerate() { _asyncGenCancelled = true; }
 
 bool Generator::processGenCancelled(
     const GeneratorFinishedCallback &fnFinished) {
+    bool cancelled = false;
     if (_asyncGenCancelled) {
         _asyncGenActive = false;
         _asyncGenCancelled = false;
@@ -290,8 +293,7 @@ bool Generator::processGenCancelled(
         if (fnFinished != nullptr) {
             fnFinished(GeneratorResult::AsyncGenCancelled, Board());
         }
-        return true;
-    } else {
-        return false;
+        cancelled = true;
     }
+    return cancelled;
 }

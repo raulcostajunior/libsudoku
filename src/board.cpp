@@ -1,3 +1,6 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-avoid-magic-numbers"
+
 #include "board.h"
 
 #include <algorithm>
@@ -70,13 +73,14 @@ SetValueResult Board::setValueAt(uint8_t line, uint8_t column, uint8_t value) {
 
     Board valueSetBoard(*this);
     valueSetBoard._values[line][column] = value;
+    SetValueResult res = SetValueResult::NoError;
     if (valueSetBoard.isValid()) {
         // Value won't invalidate the board, so go ahead and set it.
         _values[line][column] = value;
-        return SetValueResult::NoError;
     } else {
-        return SetValueResult::ValueInvalidatesBoard;
+        res = SetValueResult::ValueInvalidatesBoard;
     }
+    return res;
 }
 
 set<uint8_t> Board::getPossibleValues(uint8_t line, uint8_t column) const {
@@ -87,9 +91,9 @@ set<uint8_t> Board::getPossibleValues(uint8_t line, uint8_t column) const {
         for (const auto &_valueInRow : _values[line]) {
             pvs.erase(_valueInRow);
         }
-        size_t r = 0u;
-        while(r < Board::NUM_ROWS) {
-            pvs.erase(_values[r++][column]);
+        size_t row = 0U;
+        while (row < Board::NUM_ROWS) {
+            pvs.erase(_values[row++][column]);
         }
         const auto initLine = static_cast<size_t>(line) / 3 * 3;
         const auto initColumn = static_cast<size_t>(column) / 3 * 3;
@@ -131,7 +135,9 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
         for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             if (_values[lin][col] > 9) {
                 invalidPositions.emplace_back(lin, col);
-                if (stopAtFirst) return invalidPositions;
+                if (stopAtFirst) {
+                    return invalidPositions;
+                }
             }
         }
     }
@@ -146,7 +152,9 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                     if (val == _values[lin][pos]) {
                         // Found a repetition in the line.
                         invalidPositions.emplace_back(lin, col);
-                        if (stopAtFirst) return invalidPositions;
+                        if (stopAtFirst) {
+                            return invalidPositions;
+                        }
                         // Also adds the position of the repeated item to
                         // the invalid list.
                         invalidPositions.emplace_back(lin, pos);
@@ -166,7 +174,9 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                     if (val == _values[pos][col]) {
                         // Found a repetition in the column.
                         invalidPositions.emplace_back(lin, col);
-                        if (stopAtFirst) return invalidPositions;
+                        if (stopAtFirst) {
+                            return invalidPositions;
+                        }
                         // Also adds the position of the repeated item to
                         // the invalid list.
                         invalidPositions.emplace_back(pos, col);
@@ -210,7 +220,9 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
                         if (get<0>(secValue) == val) {
                             // Value is repeated in the section.
                             invalidPositions.emplace_back(lin, col);
-                            if (stopAtFirst) return invalidPositions;
+                            if (stopAtFirst) {
+                                return invalidPositions;
+                            }
                             get<3>(secValue) = true;
                             isFirstOccurrence = false;
                         }
@@ -237,18 +249,19 @@ vector<pair<uint8_t, uint8_t>> Board::findInvalidPositions(
     // Eliminates duplicates - some invalid positions might have been
     // included more than once when evaluated against different invalidation
     // conditions.
-    sort(
-        invalidPositions.begin(), invalidPositions.end(),
-        [](const pair<uint8_t, uint8_t> &p1, const pair<uint8_t, uint8_t> &p2) {
-            return (p1.first * 10 + p1.second < p2.first * 10 + p2.second);
-        });
+    sort(invalidPositions.begin(), invalidPositions.end(),
+         [](const pair<uint8_t, uint8_t> &pair1,
+            const pair<uint8_t, uint8_t> &pair2) {
+             return (pair1.first * 10 + pair1.second <
+                     pair2.first * 10 + pair2.second);
+         });
 
-    const auto &uniquesEnd =
-        unique(invalidPositions.begin(), invalidPositions.end(),
-               [](const pair<uint8_t, uint8_t> &p1,
-                  const pair<uint8_t, uint8_t> &p2) -> bool {
-                   return (p1.first == p2.first && p1.second == p2.second);
-               });
+    const auto &uniquesEnd = unique(
+        invalidPositions.begin(), invalidPositions.end(),
+        [](const pair<uint8_t, uint8_t> &pair1,
+           const pair<uint8_t, uint8_t> &pair2) -> bool {
+            return (pair1.first == pair2.first && pair1.second == pair2.second);
+        });
 
     invalidPositions.resize(
         static_cast<size_t>(distance(invalidPositions.begin(), uniquesEnd)));
@@ -268,13 +281,7 @@ bool Board::isEmpty() const noexcept {
 }
 
 bool Board::isComplete() const {
-    if (blankPositionCount() > 0) {
-        return false;
-    } else {
-        // A board with no blank position is
-        // completed if and only if it is valid.
-        return isValid();
-    }
+    return blankPositionCount() == 0 && isValid();
 }
 
 bool Board::operator==(const Board &board) const noexcept {
@@ -301,12 +308,14 @@ Board &Board::operator=(const Board &board) noexcept {
     return *this;
 }
 
-ostream &operator<<(ostream &os, const Board &board) {
+ostream &operator<<(ostream &ostr, const Board &board) {
     for (uint8_t lin = 0; lin < Board::NUM_ROWS; lin++) {
         for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
-            os << static_cast<int>(board.valueAt(lin, col)) << " ";
+            ostr << static_cast<int>(board.valueAt(lin, col)) << " ";
         }
-        os << endl;
+        ostr << endl;
     }
-    return os;
+    return ostr;
 }
+
+#pragma clang diagnostic pop

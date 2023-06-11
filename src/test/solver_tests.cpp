@@ -135,7 +135,9 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
 
     auto asyncSolveProgress =
         [&progressPercent, &unsolvablesFound, &solutionsFound](
-            double progress, unsigned unsolvables, unsigned solutions) { // NOLINT(bugprone-easily-swappable-parameters)
+            double progress, unsigned unsolvables,
+            unsigned
+                solutions) {  // NOLINT(bugprone-easily-swappable-parameters)
             progressPercent = progress;
             unsolvablesFound = unsolvables;
             solutionsFound = solutions;
@@ -164,7 +166,6 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
         return result;
     }
 
-    // Prints out progress with "Poor's man animation".
     int numOfWaits = 0;
     vector<string> animPattern{".   ", " .  ", "  . ", "   ."};
     while (!finished && numOfWaits < timeoutSecs) {
@@ -173,7 +174,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
         if (numOfWaits > 1 && progressPercent < 100.0) {
             clog << animPattern[numOfWaits % 4] << " AsyncSolve at "
                  << progressPercent << "%: " << unsolvablesFound
-                 << "non-solvables(s) and " << solutionsFound
+                 << "unsolvables(s) and " << solutionsFound
                  << " solution(s) found so far." << endl;
         }
     }
@@ -275,7 +276,8 @@ TEST_CASE(
     // limits.
     solveForGood(solvable_many_solutions, solved_boards);
 
-    const auto totalOfSolutions = static_cast<unsigned int>(solved_boards.size());
+    const auto totalOfSolutions =
+        static_cast<unsigned int>(solved_boards.size());
     solved_boards.clear();
 
     // Searches for solutions with a limit inferior to the already known total.
@@ -286,11 +288,12 @@ TEST_CASE(
 TEST_CASE("Cannot spawn more than one asyncSolveForGood simultaneously") {
     // Starts a lengthy asynchronous solving ...
     Solver solver;
-    auto result = solver.asyncSolveForGood(solvable_board, nullptr, nullptr);
+    auto result =
+        solver.asyncSolveForGood(solvable_board, nullptr, nullptr, 50U);
 
     // Tries to start a new one - would run simultaneously with the previous.
     auto secondResult =
-        solver.asyncSolveForGood(solvable_board, nullptr, nullptr);
+        solver.asyncSolveForGood(solvable_board, nullptr, nullptr, 50U);
 
     REQUIRE(result == SolverResult::AsyncSolvingSubmitted);
     REQUIRE(secondResult == SolverResult::AsyncSolvingBusy);

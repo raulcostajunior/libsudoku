@@ -112,7 +112,8 @@ class Board {
      * @return Vector with each blank position as a pair of (row, col)
      * coordinates.
      */
-    std::vector<std::pair<std::uint8_t, std::uint8_t>> getBlankPositions() const;
+    std::vector<std::pair<std::uint8_t, std::uint8_t>> getBlankPositions()
+        const;
 
     /**
      * Returns true if a board has no blank position and is valid -
@@ -139,11 +140,11 @@ class Board {
     // clang-format on
 
     std::vector<std::pair<std::uint8_t, std::uint8_t>> findInvalidPositions(
-        bool stopAtFirst) const;
+        bool pair1) const;
 };
 
 }  // namespace sudoku
 
-std::ostream &operator<<(std::ostream &os, const sudoku::Board &board);
+std::ostream &operator<<(std::ostream &ostr, const sudoku::Board &board);
 
 #endif

@@ -26,15 +26,21 @@ enum class SolverResult : uint8_t {
 
 // Signature of callback to report progress of an async solving process.
 using SolverProgressCallback = std::function<void(
-    double /* progressPercentage */, unsigned /* unsolvablesFound */, unsigned /* numSolutions */)>;
+    double /* progressPercentage */, unsigned /* unsolvablesFound */,
+    unsigned /* numSolutions */)>;
 
 // Signature of callback to report result of an async solving process.
 using SolverFinishedCallback = std::function<void(
-    SolverResult /* result */, const std::vector<Board>& /* solvedBoards */)>;
+    SolverResult /* result */, const std::vector<Board> & /* solvedBoards */)>;
 
 class Solver {
    public:
     Solver();
+
+    Solver(const Solver &) = delete;
+    Solver(Solver &&) = delete;
+    Solver &operator=(const Solver &) = delete;
+    Solver &operator=(Solver &&) = delete;
 
     ~Solver();
 
@@ -43,7 +49,8 @@ class Solver {
      *
      * @param solverResult the solverResult with the puzzle to be solved.
      *
-     * @param solvedBoard the solverResult with the solution found for the puzzle.
+     * @param solvedBoard the solverResult with the solution found for the
+     * puzzle.
      *
      * @return a SolverResult indicating the result of the operation.
      */
@@ -68,12 +75,12 @@ class Solver {
      *
      * @return a SolverResult indicating the result of the operation.
      */
-    SolverResult solve(const Board &board,
-                       const std::vector<uint8_t> &candidates,
-                       Board &solvedBoard);
+    static SolverResult solve(const Board &board,
+                              const std::vector<uint8_t> &candidates,
+                              Board &solvedBoard);
 
     /**
-     * Assynchronously finds the solutions for a Sudoku puzzle in a given
+     * Asynchronously finds the solutions for a Sudoku puzzle in a given
      * board, if the board is solvable.
      *
      * @param board the board with the puzzle to be solved.
@@ -81,7 +88,7 @@ class Solver {
      * @param fnProgress the callback for reporting progress of the solving
      * process.
      *
-     * @param fnFinished the callback for reporing result of the solving
+     * @param fnFinished the callback for reporting result of the solving
      * process.
      *
      * @param maxSolutions the maximum number of solutions to find.
@@ -94,7 +101,7 @@ class Solver {
     SolverResult asyncSolveForGood(const Board &board,
                                    const SolverProgressCallback &fnProgress,
                                    const SolverFinishedCallback &fnFinished,
-                                   unsigned maxSolutions = 50u);
+                                   unsigned maxSolutions);
 
     /**
      * Cancels an async solving processing if there's one going on.
@@ -107,7 +114,7 @@ class Solver {
    private:
     /**
      * Checks whether a given board is potentially solvable.
-     * If the board is not solvable, the reason for its insolvability
+     * If the board is not solvable, the reason for its insolubility
      * is also returned.
      *
      * @param board the board to be checked.
@@ -122,7 +129,7 @@ class Solver {
     // Internal method that does the real work for finding the solutions
     // to a given board. "level"
     /**
-     * Recursevilty searches for all the possible solutions for a board, up to
+     * Recursively searches for all the possible solutions for a board, up to
      * the current value of _maxSolutions.
      *
      * @param board a board whose solutions should be found.
@@ -130,7 +137,7 @@ class Solver {
      * @param fnProgress the callback for reporting progress of the solving
      * process.
      *
-     * @param fnFinished the callback for reporing result of the solving
+     * @param fnFinished the callback for reporting result of the solving
      * process.
      *
      * @param solutions the solutions found so far by searchSolutions.
@@ -145,7 +152,7 @@ class Solver {
     void searchSolutions(const Board &board,
                          const SolverProgressCallback &fnProgress,
                          const SolverFinishedCallback &fnFinished,
-                         const std::shared_ptr<std::vector<Board>>& solutions,
+                         const std::shared_ptr<std::vector<Board>> &solutions,
                          unsigned maxSolutions, unsigned level);
 
     std::atomic<bool> _asyncSolvingCancelled;

@@ -1,7 +1,6 @@
 #include "solver.h"
 
 #include <algorithm>
-#include <cstdint>
 #include <memory>
 #include <thread>
 #include <unordered_set>
@@ -10,16 +9,18 @@
 
 #include "board.h"
 
+using std::make_pair;
+using std::make_shared;
+using std::pair;
+using std::set;
+using std::shared_ptr;
+using std::unordered_set;
+using std::vector;
 using sudoku::Board;
 using sudoku::Solver;
 using sudoku::SolverResult;
-using std::make_pair;
-using std::pair;
-using std::make_shared;
-using std::set;
-using std::shared_ptr;
-using std::vector;
-using std::unordered_set;
+
+const uint8_t MAX_VALUE = 9;
 
 Solver::Solver() : _asyncSolvingCancelled(false), _asyncSolvingActive(false) {}
 
@@ -67,7 +68,7 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
     auto solutions = make_shared<vector<Board>>(vector<Board>());
     searchSolutions(
         board, nullptr,
-        [&result](SolverResult solverResult, const vector<Board>&) {
+        [&result](SolverResult solverResult, const vector<Board> &) {
             result = solverResult;
             // Ignore the vector of solutions passed as an argument to the
             // callback. The vector of solutions will be pointed by the
@@ -91,7 +92,8 @@ SolverResult Solver::solve(const Board &board,
     // to 9 without repetition.
     auto minMax = minmax_element(candidates.begin(), candidates.end());
     unordered_set<uint8_t> nonRep(candidates.begin(), candidates.end());
-    if (*minMax.first != 1 || *minMax.second != 9 || nonRep.size() != 9) {
+    if (*minMax.first != 1 || *minMax.second != MAX_VALUE ||
+        nonRep.size() != MAX_VALUE) {
         return SolverResult::InvalidatesCandidatesVector;
     }
 
@@ -104,8 +106,8 @@ SolverResult Solver::solve(const Board &board,
     // Gather empty cells.
     vector<pair<uint8_t, uint8_t>> emptyCells;
 
-    for (uint8_t lin = 0; lin < 9; lin++) {
-        for (uint8_t col = 0; col < 9; col++) {
+    for (uint8_t lin = 0; lin < Board::NUM_ROWS; lin++) {
+        for (uint8_t col = 0; col < Board::NUM_COLS; col++) {
             if (board.valueAt(lin, col) == 0) {
                 emptyCells.emplace_back(lin, col);
             }
@@ -130,7 +132,7 @@ SolverResult Solver::solve(const Board &board,
         }
 
         bool currCellSolved = false;
-        while (!currCellSolved && candidatesIdx < 9) {
+        while (!currCellSolved && candidatesIdx < MAX_VALUE) {
             auto result = solvedBoard.setValueAt(
                 currCell.first, currCell.second, candidates[candidatesIdx]);
             if (result == SetValueResult::NoError) {
@@ -160,10 +162,13 @@ SolverResult Solver::solve(const Board &board,
     return SolverResult::NoError;
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "misc-no-recursion"
+
 void Solver::searchSolutions(const Board &board,
                              const SolverProgressCallback &fnProgress,
                              const SolverFinishedCallback &fnFinished,
-                             const shared_ptr<vector<Board>>& solutions,
+                             const shared_ptr<vector<Board>> &solutions,
                              unsigned maxSolutions, unsigned level) {
     static unsigned unsolvablesFound = 0;
     static double progressPercent = 0.0;
@@ -175,7 +180,7 @@ void Solver::searchSolutions(const Board &board,
     }
     vector<set<uint8_t>> possibleValues;
     possibleValues.reserve(blanks.size());
-    for (auto & blank : blanks) {
+    for (auto &blank : blanks) {
         possibleValues.emplace_back(
             board.getPossibleValues(blank.first, blank.second));
     }
@@ -184,8 +189,8 @@ void Solver::searchSolutions(const Board &board,
             _asyncSolvingActive = false;
             _asyncSolvingCancelled = false;
             if (fnFinished != nullptr) {
-                vector<Board> vb(solutions->cbegin(), solutions->cend());
-                fnFinished(SolverResult::AsyncSolvingCancelled, vb);
+                vector<Board> boards(solutions->cbegin(), solutions->cend());
+                fnFinished(SolverResult::AsyncSolvingCancelled, boards);
             }
         }
         return;
@@ -198,8 +203,8 @@ void Solver::searchSolutions(const Board &board,
             _asyncSolvingCancelled = false;
 
             if (fnFinished != nullptr) {
-                vector<Board> vb(solutions->cbegin(), solutions->cend());
-                fnFinished(SolverResult::NoError, vb);
+                vector<Board> boards(solutions->cbegin(), solutions->cend());
+                fnFinished(SolverResult::NoError, boards);
             }
         }
         return;
@@ -209,8 +214,7 @@ void Solver::searchSolutions(const Board &board,
     size_t minSize = Board::MAX_VAL + 1;
     int possValIdx = -1;
     for (size_t j = 0; j < possibleValues.size(); j++) {
-        if (!possibleValues[j].empty() &&
-            possibleValues[j].size() < minSize) {
+        if (!possibleValues[j].empty() && possibleValues[j].size() < minSize) {
             possValIdx = static_cast<int>(j);
             minSize = possibleValues[j].size();
         }
@@ -238,9 +242,9 @@ void Solver::searchSolutions(const Board &board,
             // puzzle), update progress (a rough approximation based on the
             // progress of depth first searches for each possible value at the
             // initial search node).
-            progressPercent =
-                ((static_cast<double>(i) + 1.0) /
-                  static_cast<double>(possVals.size())) * 100.0;
+            progressPercent = ((static_cast<double>(i) + 1.0) /
+                               static_cast<double>(possVals.size())) *
+                              100.0;
         }
         if (fnProgress != nullptr) {
             fnProgress(progressPercent, unsolvablesFound,
@@ -255,15 +259,17 @@ void Solver::searchSolutions(const Board &board,
         _asyncSolvingCancelled = false;
 
         if (fnFinished != nullptr) {
-            vector<Board> vb(solutions->cbegin(), solutions->cend());
+            vector<Board> boards(solutions->cbegin(), solutions->cend());
             if (solutions->empty()) {
-                fnFinished(SolverResult::HasNoSolution, vb);
+                fnFinished(SolverResult::HasNoSolution, boards);
             } else {
-                fnFinished(SolverResult::NoError, vb);
+                fnFinished(SolverResult::NoError, boards);
             }
         }
     }
 }
+
+#pragma clang diagnostic pop
 
 void Solver::cancelAsyncSolving() { _asyncSolvingCancelled = true; }
 
