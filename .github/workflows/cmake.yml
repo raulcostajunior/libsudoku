@@ -1,4 +1,4 @@
-name: CMake
+name: Build-n-test (Ubuntu latest)
 
 on:
   push:
