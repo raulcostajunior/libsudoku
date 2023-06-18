@@ -32,6 +32,13 @@ set_target_properties(sudoku
         PUBLIC_HEADER "src/board.h;src/solver.h;src/generator.h"
 )
 
+# When building with the emscripten toolchain, the -pthread must be explicitly set both for the compiler and the
+# linker. More details at https://emscripten.org/docs/porting/pthreads.html#compiling-with-pthreads-enabled.
+if (${EMSCRIPTEN})
+    target_compile_options(sudoku PRIVATE -pthread)
+    target_link_options(sudoku PRIVATE -pthread)
+endif()
+
 target_link_libraries(sudoku ${CMAKE_THREAD_LIBS_INIT})
 
 ###### Tests definitions
@@ -41,10 +48,18 @@ target_include_directories(board_tests PRIVATE src)
 target_link_libraries(board_tests sudoku)
 
 add_executable(solver_tests src/test/solver_tests.cpp)
+if (${EMSCRIPTEN})
+    target_compile_options(solver_tests PRIVATE -pthread)
+    target_link_options(solver_tests PRIVATE -pthread)
+endif()
 target_include_directories(solver_tests PRIVATE src)
 target_link_libraries(solver_tests sudoku)
 
 add_executable(generator_tests src/test/generator_tests.cpp)
+if (${EMSCRIPTEN})
+    target_compile_options(generator_tests PRIVATE -pthread)
+    target_link_options(generator_tests PRIVATE -pthread)
+endif()
 target_include_directories(generator_tests PRIVATE src)
 target_link_libraries(generator_tests sudoku)
 
