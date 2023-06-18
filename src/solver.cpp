@@ -58,8 +58,8 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
     return SolverResult::AsyncSolvingSubmitted;
 }
 
-SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
-    auto solvable = checkBoard(board);
+SolverResult Solver::solve(const Board &puzzle, Board &solvedBoard) {
+    auto solvable = checkBoard(puzzle);
     if (solvable != SolverResult::NoError) {
         // Board is not solvable.
         return solvable;
@@ -67,7 +67,7 @@ SolverResult Solver::solve(const Board &board, Board &solvedBoard) {
     SolverResult result = SolverResult::NoError;
     auto solutions = make_shared<vector<Board>>(vector<Board>());
     searchSolutions(
-        board, nullptr,
+        puzzle, nullptr,
         [&result](SolverResult solverResult, const vector<Board> &) {
             result = solverResult;
             // Ignore the vector of solutions passed as an argument to the

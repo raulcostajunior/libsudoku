@@ -47,14 +47,14 @@ class Solver {
     /**
      * Solves a Sudoku puzzle in a given solverResult, if it is solvable.
      *
-     * @param solverResult the solverResult with the puzzle to be solved.
+     * @param puzzle the board with the puzzle to be solved.
      *
-     * @param solvedBoard the solverResult with the solution found for the
+     * @param solvedBoard the board with the solution found for the
      * puzzle.
      *
      * @return a SolverResult indicating the result of the operation.
      */
-    SolverResult solve(const Board &solverResult, Board &solvedBoard);
+    SolverResult solve(const Board &puzzle, Board &solvedBoard);
 
     /**
      * Solves a Sudoku puzzle in a given board, if it is solvable, using a
