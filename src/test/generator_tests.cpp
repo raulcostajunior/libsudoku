@@ -13,8 +13,8 @@
 using namespace sudoku;
 using namespace std;
 
-static const unsigned TIMEOUT_SECS = 1200u;
-static const unsigned POLL_INTERVAL_RESULT_MILLI = 1000u;
+static const unsigned TIMEOUT_SECS = 1200U;
+static const unsigned POLL_INTERVAL_RESULT_MILLI = 1000U;
 
 GeneratorResult generate(PuzzleDifficulty difficulty, Board &generatedBoard,
                          unsigned timeoutSecs) {
