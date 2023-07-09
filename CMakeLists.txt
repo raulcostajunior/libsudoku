@@ -41,6 +41,12 @@ endif()
 
 target_link_libraries(sudoku ${CMAKE_THREAD_LIBS_INIT})
 
+# When building with the emscripten toolchain, add the wasm module that will wrap libsudoku allowing its types
+# to be used from JS.
+if (${EMSCRIPTEN})
+   add_subdirectory(embind)
+endif()
+
 ###### Tests definitions
 
 add_executable(board_tests src/test/board_tests.cpp)
