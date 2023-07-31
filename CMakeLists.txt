@@ -44,7 +44,7 @@ target_link_libraries(sudoku ${CMAKE_THREAD_LIBS_INIT})
 # When building with the emscripten toolchain, add the wasm module that will wrap libsudoku allowing its types
 # to be used from JS.
 if (${EMSCRIPTEN})
-   add_subdirectory(embind)
+   add_subdirectory(src/embind)
 endif()
 
 ###### Tests definitions
