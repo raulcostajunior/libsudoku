@@ -47,13 +47,13 @@ SolverResult Solver::asyncSolveForGood(const Board &board,
     _asyncSolvingActive = true;
     _asyncSolvingCancelled = false;
 
-    if (_solveForGoodWorker.joinable()) {
-        _solveForGoodWorker.join();
-    }
-
     _solveForGoodWorker =
         std::thread(&Solver::searchSolutions, this, board, fnProgress,
                     fnFinished, solutions, maxSolutions, 0);
+
+    // The worker will either be cancelled, reach the solutions or find that
+    // there's no solution.
+    _solveForGoodWorker.detach();
 
     return SolverResult::AsyncSolvingSubmitted;
 }
@@ -217,19 +217,18 @@ void Solver::searchSolutions(const Board &board,
         if (!possibleValues[j].empty() && possibleValues[j].size() < minSize) {
             possValIdx = static_cast<int>(j);
             minSize = possibleValues[j].size();
-        }
-    }
-    if (minSize == Board::MAX_VAL + 1) {
-        // There's at least one blank position for which there's no option value
-        // - the board is not solvable.
-        if (level == 0) {
-            _asyncSolvingActive = false;
-            _asyncSolvingCancelled = false;
-            if (fnFinished != nullptr) {
-                fnFinished(SolverResult::HasNoSolution, vector<Board>());
+        } else if (possibleValues[j].empty()) {
+            // There's at least one blank position for which there's no option value
+            // - the board is not solvable.
+            if (level == 0) {
+                _asyncSolvingActive = false;
+                _asyncSolvingCancelled = false;
+                if (fnFinished != nullptr) {
+                    fnFinished(SolverResult::HasNoSolution, vector<Board>());
+                }
             }
+            return;
         }
-        return;
     }
     vector<uint8_t> possVals(possibleValues[possValIdx].cbegin(),
                              possibleValues[possValIdx].cend());

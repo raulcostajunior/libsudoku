@@ -14,8 +14,8 @@
 using namespace sudoku;
 using namespace std;
 
-const int timeoutSecs = 1800;
-const int maxBoardSolutions = 10'000;
+const int timeoutSecs = 240;
+const int maxBoardSolutions = 1'000;
 
 // clang-format off
 
@@ -118,6 +118,20 @@ const Board solvable_many_solutions (
     }
 );
 
+const Board solvable_too_many_solutions (
+    {
+        0, 0, 0, 0, 0, 4, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 6, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0,
+    }
+);
+
 // clang-format on
 
 SolverResult solveForGood(const Board &board, vector<Board> &solutions,
@@ -136,8 +150,7 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
     auto asyncSolveProgress =
         [&progressPercent, &unsolvablesFound, &solutionsFound](
             double progress, unsigned unsolvables,
-            unsigned
-                solutions) {  // NOLINT(bugprone-easily-swappable-parameters)
+            unsigned solutions) {  // NOLINT(bugprone-easily-swappable-parameters)
             progressPercent = progress;
             unsolvablesFound = unsolvables;
             solutionsFound = solutions;
@@ -174,8 +187,8 @@ SolverResult solveForGood(const Board &board, vector<Board> &solutions,
         if (numOfWaits > 1 && progressPercent < 100.0) {
             clog << animPattern[numOfWaits % 4] << " AsyncSolve at "
                  << progressPercent << "%: " << unsolvablesFound
-                 << "unsolvables(s) and " << solutionsFound
-                 << " solution(s) found so far." << endl;
+                 << " unsolvables(s) and " << solutionsFound
+                 << " solution(s) found so far (" << timeoutSecs - numOfWaits << " sec(s) to go before timeout)."<< endl;
         }
     }
 
@@ -312,4 +325,13 @@ TEST_CASE(
     REQUIRE(result == SolverResult::NoError);
     REQUIRE(solved_boards.size() == 1);
     REQUIRE(solved_boards[0].isComplete());
+}
+
+TEST_CASE(
+    "asyncSolveForGood converges to solutions even when there are too many.") {
+
+    vector<Board> solved_boards;
+    auto result = solveForGood(solvable_too_many_solutions, solved_boards);
+    REQUIRE(result == SolverResult::NoError);
+    REQUIRE(solved_boards.size() == maxBoardSolutions);
 }
