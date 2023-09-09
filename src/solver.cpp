@@ -85,8 +85,8 @@ SolverResult Solver::solve(const Board &puzzle, Board &solvedBoard) {
     return result;
 }
 
-SolverResult Solver::solve(const Board &board,
-                           const vector<uint8_t> &candidates,
+SolverResult Solver::solveWithCandidates(const Board &board,
+                                         const std::vector<uint8_t> &candidates,
                            Board &solvedBoard) {
     // Checks the vector of candidate values - it must have the integers from 1
     // to 9 without repetition.

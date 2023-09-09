@@ -188,7 +188,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
     // Solves the genBoard.
     Board solvedGenBoard;
 
-    Solver::solve(genBoard, candidates, solvedGenBoard);
+    Solver::solveWithCandidates(genBoard, candidates, solvedGenBoard);
 
     // Removes the maximum number of empty positions for the required difficulty
     // level.

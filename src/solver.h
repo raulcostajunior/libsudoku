@@ -75,7 +75,7 @@ class Solver {
      *
      * @return a SolverResult indicating the result of the operation.
      */
-    static SolverResult solve(const Board &board,
+    static SolverResult solveWithCandidates(const Board &board,
                               const std::vector<uint8_t> &candidates,
                               Board &solvedBoard);
 

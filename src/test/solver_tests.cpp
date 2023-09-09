@@ -220,14 +220,14 @@ TEST_CASE("Invalid board is not solvable") {
     REQUIRE(result == SolverResult::InvalidBoard);
 }
 
-TEST_CASE("Cannot solve unsolvable_board") {
+TEST_CASE("Cannot solveWithCandidates unsolvable_board") {
     Board solved_board;
     Solver solver;
     auto result = solver.solve(unsolvable_board, solved_board);
     REQUIRE(result == SolverResult::HasNoSolution);
 }
 
-TEST_CASE("Can solve solvable_board") {
+TEST_CASE("Can solveWithCandidates solvable_board") {
     Board solved_board;
     Solver solver;
     auto result = solver.solve(solvable_board, solved_board);
@@ -235,11 +235,12 @@ TEST_CASE("Can solve solvable_board") {
     REQUIRE(solved_board.isComplete());
 }
 
-TEST_CASE("Cannot solve solvable_board with invalid candidates vector") {
+TEST_CASE("Cannot solveWithCandidates solvable_board with invalid candidates vector") {
     Board solved_board;
     Solver solver;
     vector<uint8_t> candidates{1, 1, 2, 3, 4, 5, 6, 7, 9};
-    auto result = solver.solve(solvable_board, candidates, solved_board);
+    auto result =
+        solver.solveWithCandidates(solvable_board, candidates, solved_board);
     REQUIRE(result == SolverResult::InvalidatesCandidatesVector);
 }
 
