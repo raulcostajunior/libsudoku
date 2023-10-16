@@ -1,8 +1,6 @@
 #include "generator.h"
 
 #include <atomic>
-#include <chrono>
-#include <functional>
 #include <limits>
 #include <map>
 #include <random>
