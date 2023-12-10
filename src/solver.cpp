@@ -1,6 +1,5 @@
 #include "solver.h"
 
-#include <algorithm>
 #include <memory>
 #include <thread>
 #include <unordered_set>
