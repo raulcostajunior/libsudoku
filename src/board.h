@@ -22,7 +22,7 @@ class Board {
    public:
     Board() = default;
 
-    Board(const std::vector<std::uint8_t> &values) noexcept;
+    explicit Board(const std::vector<std::uint8_t> &values) noexcept;
 
     Board(const Board &board);
 
