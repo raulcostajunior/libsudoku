@@ -42,18 +42,6 @@ endif()
 
 target_link_libraries(sudoku ${CMAKE_THREAD_LIBS_INIT})
 
-# When building with the emscripten toolchain, add the wasm module that will wrap libsudoku allowing its types
-# to be used from JS.
-if (${EMSCRIPTEN})
-    # Note: CLion was issuing a warning stating that the source files in the src/embind directory didn't belong to
-    # any project target. That is a limitation of CLion, not a valid warning against the CMake project - when the
-    # active toolchain is not EMScripten, CLion overlooks the add_subdirectory below and the targets it defines.
-    # To fix that, in the Project View of CLion, right-click on the "src/embind" directory and choose the
-    # "Mark directory as > Project Sources and Headers". More details can be seen in the following StackOverflow
-    # entry: https://stackoverflow.com/questions/46245738/in-clion-header-only-library-file-does-not-belong-to-any-project-target-code
-   add_subdirectory(src/embind)
-endif()
-
 ###### Tests definitions
 
 add_executable(board_tests src/test/board_tests.cpp)
@@ -92,25 +80,3 @@ add_test(
   NAME generator_tests
   COMMAND $<TARGET_FILE:generator_tests> --success
 )
-
-###### Installation definition
-
-# include(GNUInstallDirs)
-
-# install(
-#   TARGETS sudoku
-#   EXPORT libsudoku
-#   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-# )
-
-# install(
-#   TARGETS board_tests generator_tests solver_tests
-#   RUNTIME
-#       DESTINATION ${CMAKE_INSTALL_BINDIR}/tests
-# )
-
-# install(EXPORT libsudoku
-#   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/LibSudoku
-#   NAMESPACE LibSudoku::
-#   FILE LibSudokuConfig.cmake
-# )
