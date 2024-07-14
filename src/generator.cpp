@@ -6,7 +6,6 @@
 #include <random>
 #include <thread>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include "board.h"
