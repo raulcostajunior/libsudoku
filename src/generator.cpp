@@ -248,7 +248,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
                 solvingFinished = true;
                 boardSolutions = solutions;
             },
-            2);
+            20);
 
         // Waits for the async search for solutions to finish.
         while (!solvingFinished && !solvingCancelled) {
