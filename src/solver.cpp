@@ -86,7 +86,7 @@ SolverResult Solver::solve(const Board &puzzle, Board &solvedBoard) {
 
 SolverResult Solver::solveWithCandidates(const Board &board,
                                          const std::vector<uint8_t> &candidates,
-                           Board &solvedBoard) {
+                                         Board &solvedBoard) {
     // Checks the vector of candidate values - it must have the integers from 1
     // to 9 without repetition.
     auto minMax = minmax_element(candidates.begin(), candidates.end());
@@ -217,7 +217,8 @@ void Solver::searchSolutions(const Board &board,
             possValIdx = static_cast<int>(j);
             minSize = possibleValues[j].size();
         } else if (possibleValues[j].empty()) {
-            // There's at least one blank position for which there's no option value
+            // There's at least one blank position for which there's no option
+            // value
             // - the board is not solvable.
             if (level == 0) {
                 _asyncSolvingActive = false;
