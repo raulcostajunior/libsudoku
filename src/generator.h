@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <functional>
 #include <thread>
-#include <utility>
 
 namespace sudoku {
 
@@ -44,7 +43,7 @@ class Generator {
      * @brief The maximum number of empty positions in a board generated for a
      * given difficulty level.
      *
-     * @param the difficulty level of the board to generate.
+     * @param difficulty level of difficulty of the board to be generated.
      * @return the maximum number of empty positions for the provided
      *         difficulty level.
      */
