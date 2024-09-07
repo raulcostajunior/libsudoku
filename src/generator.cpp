@@ -27,7 +27,7 @@ vector<uint8_t> genCandidatesVector(mt19937 &randEngine) {
     while (availables.size() > 1) {
         const size_t idx = randEngine() % availables.size();
         candidates.emplace_back(availables[idx]);
-        availables.erase(availables.begin() + idx);
+        availables.erase(availables.begin() + static_cast<long long>(idx));
     }
     candidates.emplace_back(availables[0]);
     return candidates;
@@ -138,13 +138,13 @@ GeneratorResult Generator::asyncGenerate(
 void Generator::generate(PuzzleDifficulty difficulty,
                          const GeneratorProgressCallback &fnProgress,
                          const GeneratorFinishedCallback &fnFinished) {
-    static const unsigned long long POLL_INTERVAL_SOLVE_MILLI = 100;
+    static constexpr unsigned long long POLL_INTERVAL_SOLVE_MILLI = 100;
     random_device randDev;
     mt19937 randEngine(randDev());
 
     // The last step, reduction of empty positions to guarantee single solution,
     // is the one that takes longer, specially for the Hard level.
-    const uint8_t totalSteps = 5;
+    constexpr uint8_t totalSteps = 5;
 
     uint8_t currentStep = 1;  // Step 1 -> random candidate vector generation.
 
