@@ -153,12 +153,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
     }
 
     // Generate random candidates values vector.
-    vector<uint8_t> candidates = genCandidatesVector(randEngine);
-
-    clog << "Generating board with difficulty '" << static_cast<int>(difficulty)
-         << "' and candidates vector: '" << candidates[0] << ", "
-         << candidates[1] << ", " << candidates[2] << ", " << candidates[3]
-         << ", ...'" << endl;
+    const vector<uint8_t> candidates = genCandidatesVector(randEngine);
 
     if (processGenCancelled(fnFinished)) {
         return;
