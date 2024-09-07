@@ -1,5 +1,6 @@
 #include "solver.h"
 
+#include <algorithm>
 #include <memory>
 #include <thread>
 #include <unordered_set>
@@ -89,15 +90,14 @@ SolverResult Solver::solveWithCandidates(const Board &board,
                                          Board &solvedBoard) {
     // Checks the vector of candidate values - it must have the integers from 1
     // to 9 without repetition.
-    auto minMax = minmax_element(candidates.begin(), candidates.end());
-    unordered_set<uint8_t> nonRep(candidates.begin(), candidates.end());
-    if (*minMax.first != 1 || *minMax.second != MAX_VALUE ||
+    auto [min, max] = std::minmax_element(candidates.begin(), candidates.end());
+    if (unordered_set<uint8_t> nonRep(candidates.begin(), candidates.end());
+        *min != 1 || *max != MAX_VALUE ||
         nonRep.size() != MAX_VALUE) {
         return SolverResult::InvalidatesCandidatesVector;
     }
 
-    auto solvable = checkBoard(board);
-    if (solvable != SolverResult::NoError) {
+    if (const auto solvable = checkBoard(board); solvable != SolverResult::NoError) {
         // Board is not solvable.
         return solvable;
     }

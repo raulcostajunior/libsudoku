@@ -3,6 +3,7 @@
 #include <atomic>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <random>
 #include <thread>
 #include <unordered_set>
@@ -15,25 +16,20 @@ using namespace sudoku;
 using namespace std;
 
 vector<uint8_t> genCandidatesVector(mt19937 &randEngine) {
-    vector<uint8_t> candidates;
-    while (candidates.size() < Board::MAX_VAL - 1) {
-        uint8_t val = randEngine() % Board::MAX_VAL + 1;
-        if (find(candidates.cbegin(), candidates.cend(), val) ==
-            candidates.cend()) {
-            candidates.emplace_back(val);
-        }
-    }
-    // Looks for last missing value to add to candidates vector.
-    vector<bool> valuesPresent(Board::MAX_VAL, false);
-    for (const uint8_t val : candidates) {
-        valuesPresent[val - 1] = true;
-    }
-    uint8_t missingVal = static_cast<uint8_t>(
-        distance(valuesPresent.cbegin(),
-                 find(valuesPresent.cbegin(), valuesPresent.cend(), false)) +
-        1);
-    candidates.emplace_back(missingVal);
+    // Ordered vector with values to be randomically transferred to the
+    // candidates vector being generated.
+    vector<uint8_t> availables(Board::MAX_VAL);
+    iota(begin(availables), end(availables), 1);
 
+    vector<uint8_t> candidates;
+    candidates.reserve(Board::MAX_VAL);
+
+    while (availables.size() > 1) {
+        const size_t idx = randEngine() % availables.size();
+        candidates.emplace_back(availables[idx]);
+        availables.erase(availables.begin() + static_cast<long long>(idx));
+    }
+    candidates.emplace_back(availables[0]);
     return candidates;
 }
 
@@ -142,13 +138,13 @@ GeneratorResult Generator::asyncGenerate(
 void Generator::generate(PuzzleDifficulty difficulty,
                          const GeneratorProgressCallback &fnProgress,
                          const GeneratorFinishedCallback &fnFinished) {
-    static const unsigned long long POLL_INTERVAL_SOLVE_MILLI = 100;
+    static constexpr unsigned long long POLL_INTERVAL_SOLVE_MILLI = 100;
     random_device randDev;
     mt19937 randEngine(randDev());
 
     // The last step, reduction of empty positions to guarantee single solution,
     // is the one that takes longer, specially for the Hard level.
-    const uint8_t totalSteps = 5;
+    constexpr uint8_t totalSteps = 5;
 
     uint8_t currentStep = 1;  // Step 1 -> random candidate vector generation.
 
@@ -157,7 +153,7 @@ void Generator::generate(PuzzleDifficulty difficulty,
     }
 
     // Generate random candidates values vector.
-    vector<uint8_t> candidates = genCandidatesVector(randEngine);
+    const vector<uint8_t> candidates = genCandidatesVector(randEngine);
 
     if (processGenCancelled(fnFinished)) {
         return;
