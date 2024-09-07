@@ -3,8 +3,8 @@
 #include <atomic>
 #include <limits>
 #include <map>
-#include <random>
 #include <numeric>
+#include <random>
 #include <thread>
 #include <unordered_set>
 #include <vector>
@@ -19,7 +19,7 @@ vector<uint8_t> genCandidatesVector(mt19937 &randEngine) {
     // Ordered vector with values to be randomically transferred to the
     // candidates vector being generated.
     vector<uint8_t> availables(Board::MAX_VAL);
-    iota(begin(availables), end(availables), 0);
+    iota(begin(availables), end(availables), 1);
 
     vector<uint8_t> candidates;
     candidates.reserve(Board::MAX_VAL);
@@ -155,7 +155,10 @@ void Generator::generate(PuzzleDifficulty difficulty,
     // Generate random candidates values vector.
     vector<uint8_t> candidates = genCandidatesVector(randEngine);
 
-    clog << "Generating board with difficulty '" << static_cast<int>(difficulty) << "' and candidates vector: '" << candidates[0] <<", "<<  candidates[1]<<", " << candidates[2]<< ", " << candidates[3] << ", ...'" << endl;
+    clog << "Generating board with difficulty '" << static_cast<int>(difficulty)
+         << "' and candidates vector: '" << candidates[0] << ", "
+         << candidates[1] << ", " << candidates[2] << ", " << candidates[3]
+         << ", ...'" << endl;
 
     if (processGenCancelled(fnFinished)) {
         return;
