@@ -116,7 +116,6 @@ TEST_CASE("asyncGenerate can generate solvable MEDIUM puzzle") {
     REQUIRE(genBoard.isValid());
 
     auto nBlanks = genBoard.blankPositionCount();
-
     REQUIRE(
         (nBlanks <= Generator::maxEmptyPositions(PuzzleDifficulty::Medium)));
 
